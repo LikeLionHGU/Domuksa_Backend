@@ -1,0 +1,90 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.0.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'org.example'
+version = '0.0.1-SNAPSHOT'
+description = 'Emmm'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // Web & REST
+    // - 내장 톰캣 서버 제공
+    // - Spring MVC 기반 REST API 개발 가능
+    // - @RestController, @GetMapping 등 사용
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+
+    // JPA (ORM)
+    // - DB 테이블을 Java 객체(Entity)로 매핑
+    // - Repository 인터페이스만으로 CRUD 가능
+    // - 내부적으로 Hibernate 사용
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+
+    // Validation (요청 데이터 검증)
+    // - DTO에 @Valid 사용 가능
+    // - @NotNull, @NotBlank, @Email 등 검증 어노테이션 제공
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+
+    // Lombok (보일러플레이트 코드 제거)
+    // - Getter / Setter / 생성자 / Builder 자동 생성
+    // - 컴파일 시점에만 필요
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+
+    //  Database (연습용 H2 DB), 협업할때는 안씀
+    // - 메모리 기반 DB
+    // - 설치 필요 없이 즉시 사용 가능
+    // - 서버 종료 시 데이터 초기화
+    //runtimeOnly 'com.h2database:h2'
+
+    // Database (운영용 MySQL)
+    // - 실제 서비스용 DB
+    // - 필요할 때 위 H2 대신 사용
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+
+    // Dev Tools (개발 편의 기능)
+    // - 코드 수정 시 서버 자동 재시작
+    // - 개발 속도 향상
+    // - 운영 서버에서는 사용하지 않음
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+
+    // Test (테스트 환경)
+    // - JUnit, Mockito, Spring Test 포함
+    // - 애플리케이션 동작 검증용
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Google ID Token 검증용 (Google API Client)
+    implementation 'com.google.api-client:google-api-client:2.6.0'
+
+
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
