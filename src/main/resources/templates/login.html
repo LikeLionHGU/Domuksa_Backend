@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>구글 로그인 연동 테스트</title>
+    <style>
+        /* 간단한 스타일링 */
+        #profile-box { display: none; border: 1px solid #ddd; padding: 20px; width: 300px; margin-top: 20px; border-radius: 10px; }
+        #profile-img { width: 100px; height: 100px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+<h2>구글 로그인 (Spring Boot 연동)</h2>
+
+<div id="g_id_onload"
+     data-client_id="216903189163-a8vbhhhcedp76hs3tj2fndp755rbani4.apps.googleusercontent.com"
+     data-callback="handleCredentialResponse">
+</div>
+
+<div class="g_id_signin" data-type="standard" data-size="large"></div>
+
+<div id="profile-box">
+    <h3>로그인 성공!</h3>
+    <img id="profile-img" src="" alt="프로필 이미지"><br>
+    <p><strong>이름:</strong> <span id="user-name"></span></p>
+    <p><strong>이메일:</strong> <span id="user-email"></span></p>
+    <button onclick="logout()">로그아웃</button>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script>
+    // 4. 구글 로그인이 완료되면 이 함수가 실행됨
+    function handleCredentialResponse(response) {
+        const idToken = response.credential; // 구글이 준 인증 토큰
+
+        // 백엔드(/user/google)로 토큰 전송
+        fetch("/user/google", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                idToken: idToken // DTO의 필드명과 일치해야 함
+            })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("로그인 실패");
+                return res.json();
+            })
+            .then(data => {
+                // 5. 서버에서 받은 정보(UserDto.LoginResDto)로 화면 갱신
+                console.log("서버 응답:", data);
+
+                document.getElementById("profile-box").style.display = "block"; // 박스 보이기
+                document.getElementById("user-name").innerText = data.name;
+                document.getElementById("user-email").innerText = data.email;
+
+                // 프로필 사진이 있으면 보여주고, 없으면 기본 이미지
+                if(data.profileUrl) {
+                    document.getElementById("profile-img").src = data.profileUrl;
+                }
+
+                // 로그인 버튼은 숨기기 (선택사항)
+                document.querySelector(".g_id_signin").style.display = "none";
+            })
+            .catch(error => {
+                console.error("에러 발생:", error);
+                alert("로그인 처리에 실패했습니다.");
+            });
+    }
+
+    // 6. 로그아웃 기능 (/user/logout)
+    function logout() {
+        fetch("/user/logout", { method: "POST" })
+            .then(() => {
+                alert("로그아웃 되었습니다.");
+                location.reload(); // 페이지 새로고침
+            });
+    }
+</script>
+</body>
+</html>
