@@ -2,7 +2,6 @@ package org.example.emmm.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -13,24 +12,17 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-            // 템플릿 테스트용: 로그인 API/페이지/스웨거는 열어둠
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/", "/login",
-                    "/user/google", "/user/me", "/user/logout",
-                    "/swagger-ui.html", "/swagger-ui/**",
-                    "/v3/api-docs/**"
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
+                // ✅ 개발용: 전부 허용
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                )
 
-            // 브라우저 fetch로 POST 테스트할 거라서 /user/** 는 CSRF 제외 (개발용)
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/user/**", "/v3/api-docs/**", "/swagger-ui/**")
-            )
+                // ✅ Swagger에서 POST/PUT/DELETE 테스트 편하게 하려면 CSRF 끄는 게 제일 간단
+                .csrf(csrf -> csrf.disable())
 
-            // 일단 기본 로그인 폼은 비활성화해도 되고 켜둬도 됨
-            .httpBasic(Customizer.withDefaults());
+                // ✅ Basic 로그인 팝업/기본 로그인 폼 자체를 막음
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(form -> form.disable());
 
         return http.build();
     }
