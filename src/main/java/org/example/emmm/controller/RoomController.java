@@ -1,9 +1,12 @@
 package org.example.emmm.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.emmm.dto.AgendaDto;
 import org.example.emmm.dto.RoomDto;
 import org.example.emmm.service.RoomService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +32,12 @@ public class RoomController {
     @DeleteMapping("/{roomId}/{userId}")
     public void delete(@PathVariable Long roomId, @PathVariable Long userId) {
         roomService.delete(roomId, userId);
+    }
+
+    //room에대한 agenda의 모든 정보 다 가져오기
+    @GetMapping("/{roomId}/agenda")
+    public List<AgendaDto.DetailAgendaResDto> getAgendas(@PathVariable Long roomId) {
+        return roomService.getAgendas(roomId);
     }
 
 }

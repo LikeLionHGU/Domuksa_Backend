@@ -46,4 +46,54 @@ public class AgendaService {
 
         return AgendaDto.CreateAgendaResDto.from(a, ac);
     }
+
+    @Transactional
+    public AgendaDto.DetailAgendaResDto getAgenda(Long agendaId) {
+        Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
+
+        AgendaConfig ac = a.getConfig();
+
+        return AgendaDto.DetailAgendaResDto.from(a, ac);
+    }
+
+    @Transactional
+    public AgendaDto.UpdateAgendaResDto updateAgenda(Long agendaId, AgendaDto.UpdateAgendaReqDto req) {
+        Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
+
+        a.setName(req.getName());
+
+        agendaRepository.save(a);
+
+        return AgendaDto.UpdateAgendaResDto.from(a);
+    }
+
+    @Transactional
+    public AgendaDto.UpdateConfigResDto updateConfig(Long agendaId, AgendaDto.UpdateConfigReqDto req) {
+        Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
+
+        AgendaConfig ac = a.getConfig();
+
+        ac.setVoteEnabled(req.isVoteEnabled());
+        ac.setCommentEnabled(req.isCommentEnabled());
+        ac.setFileEnabled(req.isFileEnabled());
+
+        agendaRepository.save(a);
+
+        return AgendaDto.UpdateConfigResDto.from(a, ac);
+    }
+
+    @Transactional
+    public void deleteAgenda(Long agendaId) {
+        Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
+
+        AgendaConfig ac = a.getConfig();
+
+        ac.setDeleted(true);
+        a.setDeleted(true);
+    }
+
 }

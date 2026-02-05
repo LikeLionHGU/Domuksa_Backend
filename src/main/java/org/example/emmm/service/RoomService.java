@@ -2,11 +2,10 @@ package org.example.emmm.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.emmm.domain.Room;
-import org.example.emmm.domain.User;
-import org.example.emmm.domain.UserRoom;
+import org.example.emmm.domain.*;
+import org.example.emmm.dto.AgendaDto;
 import org.example.emmm.dto.RoomDto;
-import org.example.emmm.dto.UserDto;
+import org.example.emmm.repository.AgendaRepository;
 import org.example.emmm.repository.RoomRepository;
 import org.example.emmm.repository.UserRepository;
 import org.example.emmm.repository.UserRoomRepository;
@@ -15,6 +14,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,6 +23,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final UserRoomRepository userRoomRepository;
+    private final AgendaRepository agendaRepository;
 
     @Transactional
     public RoomDto.CreateResDto create(RoomDto.CreateReqDto req, Long hostUserId) {
@@ -119,5 +120,21 @@ public class RoomService {
         } else {
             userRoom.setDeleted(true);
         }
+    }
+
+    @Transactional
+    public List<AgendaDto.DetailAgendaResDto> getAgendas(Long roomId) {
+        roomRepository.findByIdAndDeletedFalse(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
+
+        List<Agenda> agendas = agendaRepository.findByRoomId(roomId);
+
+        List<AgendaDto.DetailAgendaResDto> res = new ArrayList<>();
+        for(Agenda a : agendas) {
+            AgendaConfig ac = a.getConfig();
+            res.add(AgendaDto.DetailAgendaResDto.from(a, ac));
+        }
+
+        return res;
     }
 }
