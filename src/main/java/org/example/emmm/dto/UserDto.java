@@ -3,6 +3,9 @@ package org.example.emmm.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.example.emmm.domain.Room;
+
+import java.util.List;
 
 public class UserDto {
     @Getter
@@ -25,6 +28,12 @@ public class UserDto {
     public static class GoogleLoginResDto {
          private String accessToken; // JWT
         private UserInfo user;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class DetailResDto {
+        private List<Room> rooms;
     }
 
 }

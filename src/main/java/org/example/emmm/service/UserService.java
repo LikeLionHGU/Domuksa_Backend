@@ -1,23 +1,25 @@
 package org.example.emmm.service;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.domain.User;
+import org.example.emmm.domain.UserRoom;
+import org.example.emmm.dto.RoomDto;
+import org.example.emmm.repository.RoomRepository;
 import org.example.emmm.repository.UserRepository;
+import org.example.emmm.repository.UserRoomRepository;
 import org.example.emmm.security.GoogleIdTokenVerifierService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final UserRoomRepository userRoomRepository;
     private final GoogleIdTokenVerifierService googleIdTokenVerifierService;
 
     /**
@@ -60,6 +62,40 @@ public class UserService {
         newUser.setProfileUrl(picture);
 
         return userRepository.save(newUser);
+    }
+
+    public List<RoomDto.DetailResDto> getRunningRooms(Long userId) {
+        User u =  userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<UserRoom> urs = userRoomRepository.findAllByUserId(u.getId());
+
+        List<RoomDto.DetailResDto> result = new ArrayList<>();
+
+        for(UserRoom ur : urs){
+            if(ur.getRoom().getState().equals("running")){
+                result.add(RoomDto.DetailResDto.from(ur.getRoom(), ur));
+            }
+        }
+
+        return result;
+    }
+
+    public List<RoomDto.DetailResDto> getCompleteRooms(Long userId) {
+        User u =  userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<UserRoom> urs = userRoomRepository.findAllByUserId(u.getId());
+
+        List<RoomDto.DetailResDto> result = new ArrayList<>();
+
+        for(UserRoom ur : urs){
+            if(ur.getRoom().getState().equals("complete")){
+                result.add(RoomDto.DetailResDto.from(ur.getRoom(), ur));
+            }
+        }
+
+        return result;
     }
 
 }

@@ -3,6 +3,7 @@ package org.example.emmm.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.domain.User;
+import org.example.emmm.dto.RoomDto;
 import org.example.emmm.dto.UserDto;
 import org.example.emmm.repository.UserRepository;
 import org.example.emmm.security.AuthService;
@@ -10,6 +11,8 @@ import org.example.emmm.security.GoogleTokenExchangeService;
 import org.example.emmm.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -80,6 +83,17 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok().body("{\"text\":\"로그아웃 되었습니다.\"}");
+    }
+
+
+    @GetMapping("/{userId}/running")
+    public ResponseEntity<List<RoomDto.DetailResDto>> getRunningRoom(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getRunningRooms(userId));
+    }
+
+    @GetMapping("/{userId}/complete")
+    public ResponseEntity<List<RoomDto.DetailResDto>> getCompleteRoom(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getCompleteRooms(userId));
     }
 }
 
