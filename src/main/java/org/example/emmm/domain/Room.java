@@ -45,6 +45,4 @@ public class Room{
 
     private String state;
 
-
-
 }
