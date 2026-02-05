@@ -1,9 +1,13 @@
 package org.example.emmm.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.example.emmm.domain.Agenda;
 import org.example.emmm.domain.AgendaConfig;
+
+import java.time.LocalDateTime;
 
 public class AgendaDto {
     @Getter
@@ -22,6 +26,70 @@ public class AgendaDto {
             return new CreateAgendaResDto(
                 AgendaBlock.from(agenda), ConfigBlock.from(config)
             );
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class DetailAgendaResDto {
+        private AgendaBlock agenda;
+        private ConfigBlock config;
+
+        public static DetailAgendaResDto from(Agenda agenda, AgendaConfig config) {
+            return new DetailAgendaResDto(
+                    AgendaBlock.from(agenda), ConfigBlock.from(config)
+            );
+        }
+
+    }
+
+    @Getter
+    @Setter
+    public static class UpdateAgendaReqDto {
+        private String name;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateAgendaResDto {
+        private Long agendaId;
+        private String name;
+
+        public static UpdateAgendaResDto from(Agenda agenda) {
+            return AgendaDto.UpdateAgendaResDto.builder()
+                    .agendaId(agenda.getId())
+                    .name(agenda.getName())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class UpdateConfigReqDto {
+        private boolean voteEnabled;
+        private boolean commentEnabled;
+        private boolean fileEnabled;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateConfigResDto {
+        private Long agendaId;
+        private LocalDateTime modifiedAt;
+        private boolean voteEnabled;
+        private boolean commentEnabled;
+        private boolean fileEnabled;
+
+        public static UpdateConfigResDto from(Agenda agenda, AgendaConfig config) {
+            return UpdateConfigResDto.builder()
+                    .agendaId(agenda.getId())
+                    .modifiedAt(LocalDateTime.now())
+                    .voteEnabled(config.isVoteEnabled())
+                    .commentEnabled(config.isCommentEnabled())
+                    .fileEnabled(config.isFileEnabled())
+                    .build();
         }
     }
 
