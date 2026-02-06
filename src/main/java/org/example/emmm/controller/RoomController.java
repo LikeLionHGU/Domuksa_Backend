@@ -25,7 +25,7 @@ public class RoomController {
         return ResponseEntity.ok(roomService.create(req, reqId));
     }
 
-    @PostMapping("/{member")
+    @PostMapping("/member")
     public ResponseEntity<RoomDto.ParticipateCreateResDto> createParticipate(@RequestBody RoomDto.ParticipateCreateReqDto req,
                                                                              @AuthenticationPrincipal UserPrincipal principal
     ) {
