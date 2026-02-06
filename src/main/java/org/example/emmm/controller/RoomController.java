@@ -3,7 +3,10 @@ package org.example.emmm.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.dto.AgendaDto;
 import org.example.emmm.dto.RoomDto;
+import org.example.emmm.security.UserPrincipal;
 import org.example.emmm.service.RoomService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,30 +17,49 @@ import java.util.List;
 public class RoomController {
     private final RoomService roomService;
 
-    @PostMapping("/{hostId}")
-    public RoomDto.CreateResDto create(@RequestBody RoomDto.CreateReqDto req, @PathVariable Long hostId) {
-        return roomService.create(req, hostId);
+    @PostMapping("/host")
+    public ResponseEntity<RoomDto.CreateRoomResDto> create(@RequestBody RoomDto.CreateRoomReqDto req,
+                                                           @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        Long reqId = principal.getUserId();
+        return ResponseEntity.ok(roomService.create(req, reqId));
     }
 
-    @PostMapping("/{userId}/member")
-    public RoomDto.ParticipateCreateResDto createParticipate(@RequestBody RoomDto.ParticipateCreateReqDto req, @PathVariable Long userId) {
-        return roomService.createParticipate(req, userId);
+    @PostMapping("/{member")
+    public ResponseEntity<RoomDto.ParticipateCreateResDto> createParticipate(@RequestBody RoomDto.ParticipateCreateReqDto req,
+                                                                             @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        Long reqId = principal.getUserId();
+        return ResponseEntity.ok(roomService.createParticipate(req, reqId));
     }
 
-    @GetMapping("/{roomId}/{userId}")
-    public RoomDto.DetailResDto getRoom(@PathVariable Long roomId, @PathVariable Long userId) {
-        return roomService.getRoom(roomId, userId);
+    @GetMapping("/{roomId}")
+    public ResponseEntity<RoomDto.DetailRoomResDto> getRoom(@PathVariable Long roomId,
+                                                            @AuthenticationPrincipal UserPrincipal principal) {
+        Long reqId = principal.getUserId();
+        return ResponseEntity.ok(roomService.getRoom(roomId, reqId));
     }
 
-    @DeleteMapping("/{roomId}/{userId}")
-    public void delete(@PathVariable Long roomId, @PathVariable Long userId) {
-        roomService.delete(roomId, userId);
+    @DeleteMapping("/{roomId}")
+    public void delete(@PathVariable Long roomId,
+                       @AuthenticationPrincipal UserPrincipal principal) {
+        Long reqId = principal.getUserId();
+        roomService.delete(roomId, reqId);
     }
 
     //room에대한 agenda의 모든 정보 다 가져오기
     @GetMapping("/{roomId}/agenda")
-    public List<AgendaDto.DetailAgendaResDto> getAgendas(@PathVariable Long roomId) {
-        return roomService.getAgendas(roomId);
+    public ResponseEntity<List<AgendaDto.DetailAgendaResDto>> getAgendas(@PathVariable Long roomId) {
+        return ResponseEntity.ok(roomService.getAgendas(roomId));
+    }
+
+    //해당 방의 웹소켓 적용해서 진행중/완료됨 상태 변환하기
+    @PatchMapping("/{roomId}/state")
+    public void updateRoomState(@RequestBody RoomDto.UpdateRoomReqDto req,
+                                @AuthenticationPrincipal UserPrincipal principal,
+                                @PathVariable Long roomId) {
+        Long reqId = principal.getUserId();
+        roomService.updateRoomState(req, roomId, reqId);
     }
 
 }

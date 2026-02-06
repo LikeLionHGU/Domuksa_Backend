@@ -70,6 +70,8 @@ public class AgendaDto {
         private boolean voteEnabled;
         private boolean commentEnabled;
         private boolean fileEnabled;
+        private boolean aiSummaryEnabled;
+
     }
 
     @Getter
@@ -81,6 +83,7 @@ public class AgendaDto {
         private boolean voteEnabled;
         private boolean commentEnabled;
         private boolean fileEnabled;
+        private boolean aiSummaryEnabled;
 
         public static UpdateConfigResDto from(Agenda agenda, AgendaConfig config) {
             return UpdateConfigResDto.builder()
@@ -89,6 +92,7 @@ public class AgendaDto {
                     .voteEnabled(config.isVoteEnabled())
                     .commentEnabled(config.isCommentEnabled())
                     .fileEnabled(config.isFileEnabled())
+                    .aiSummaryEnabled(config.isAiSummaryEnabled())
                     .build();
         }
     }
@@ -96,7 +100,7 @@ public class AgendaDto {
     @Getter
     @AllArgsConstructor
     public static class AgendaBlock {
-        private Long id;
+        private Long agendaId;
         private Long roomId;
         private String name;
         private int sequence;
@@ -118,13 +122,15 @@ public class AgendaDto {
         private boolean voteEnabled;
         private boolean commentEnabled;
         private boolean fileEnabled;
+        private boolean aiSummaryEnabled;
 
         public static ConfigBlock from(AgendaConfig config) {
             return new ConfigBlock(
                     config.getAgenda().getId(),
                     config.isVoteEnabled(),
                     config.isCommentEnabled(),
-                    config.isFileEnabled()
+                    config.isFileEnabled(),
+                    config.isAiSummaryEnabled()
             );
         }
     }

@@ -11,6 +11,7 @@ import org.example.emmm.repository.UserRepository;
 import org.example.emmm.repository.UserRoomRepository;
 import org.example.emmm.util.RoomCodeGenerator;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,9 +25,10 @@ public class RoomService {
     private final UserRepository userRepository;
     private final UserRoomRepository userRoomRepository;
     private final AgendaRepository agendaRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
-    public RoomDto.CreateResDto create(RoomDto.CreateReqDto req, Long hostUserId) {
+    public RoomDto.CreateRoomResDto create(RoomDto.CreateRoomReqDto req, Long hostUserId) {
 
         User host = userRepository.findByIdAndDeletedFalse(hostUserId)
                 .orElseThrow(() -> new IllegalArgumentException("host user not found"));
@@ -55,7 +57,7 @@ public class RoomService {
 
                 userRoomRepository.save(hostMapping);
 
-                return new RoomDto.CreateResDto(savedRoom.getId(), savedRoom.getCode(), savedRoom.getRoomName());
+                return new RoomDto.CreateRoomResDto(savedRoom.getId(), savedRoom.getCode(), savedRoom.getRoomName());
 
             } catch (DataIntegrityViolationException e) {
                 // room.code UNIQUE 충돌 -> 재시도
@@ -85,7 +87,7 @@ public class RoomService {
         return new RoomDto.ParticipateCreateResDto(r.getId(), ur.getId(), ur.getRole());
     }
 
-    public RoomDto.DetailResDto getRoom(Long roomId, Long userId) {
+    public RoomDto.DetailRoomResDto getRoom(Long roomId, Long userId) {
         Room room = roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
@@ -95,7 +97,7 @@ public class RoomService {
         UserRoom userRoom = userRoomRepository.findByUserAndRoom(user, room)
                 .orElseThrow(() -> new IllegalArgumentException("이 방에 참여하지 않은 유저입니다."));
 
-        return RoomDto.DetailResDto.from(room, userRoom);
+        return RoomDto.DetailRoomResDto.from(room, userRoom);
     }
 
     @Transactional
@@ -137,4 +139,35 @@ public class RoomService {
 
         return res;
     }
+
+    @Transactional
+    public void updateRoomState(RoomDto.UpdateRoomReqDto req, Long roomId, Long userId) {
+
+        Room r = roomRepository.findByIdAndDeletedFalse(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
+
+        User u = userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        UserRoom ur = userRoomRepository.findByUserAndRoom(u, r)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        if (!"host".equals(ur.getRole())) {
+            throw new IllegalStateException("방 상태 변경 권한이 없습니다.");
+        }
+
+        if ("running".equals(r.getState())) {
+            r.setState("complete");
+        } else {
+            r.setState("running");
+        }
+
+        roomRepository.save(r);
+
+        messagingTemplate.convertAndSend(
+                "/topic/rooms/" + roomId,
+                new RoomDto.RoomStateChangedMessage(r.getId(), r.getState())
+        );
+    }
+
 }
