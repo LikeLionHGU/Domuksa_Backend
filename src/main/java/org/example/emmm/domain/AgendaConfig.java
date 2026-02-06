@@ -38,6 +38,7 @@ public class AgendaConfig{
     private boolean voteEnabled;
     private boolean commentEnabled;
     private boolean fileEnabled;
+    private boolean aiSummaryEnabled;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, unique = true)

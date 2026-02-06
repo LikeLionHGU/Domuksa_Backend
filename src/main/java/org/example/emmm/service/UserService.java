@@ -64,34 +64,34 @@ public class UserService {
         return userRepository.save(newUser);
     }
 
-    public List<RoomDto.DetailResDto> getRunningRooms(Long userId) {
+    public List<RoomDto.DetailRoomResDto> getRunningRooms(Long userId) {
         User u =  userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<UserRoom> urs = userRoomRepository.findAllByUserId(u.getId());
 
-        List<RoomDto.DetailResDto> result = new ArrayList<>();
+        List<RoomDto.DetailRoomResDto> result = new ArrayList<>();
 
         for(UserRoom ur : urs){
             if(ur.getRoom().getState().equals("running")){
-                result.add(RoomDto.DetailResDto.from(ur.getRoom(), ur));
+                result.add(RoomDto.DetailRoomResDto.from(ur.getRoom(), ur));
             }
         }
 
         return result;
     }
 
-    public List<RoomDto.DetailResDto> getCompleteRooms(Long userId) {
+    public List<RoomDto.DetailRoomResDto> getCompleteRooms(Long userId) {
         User u =  userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<UserRoom> urs = userRoomRepository.findAllByUserId(u.getId());
 
-        List<RoomDto.DetailResDto> result = new ArrayList<>();
+        List<RoomDto.DetailRoomResDto> result = new ArrayList<>();
 
         for(UserRoom ur : urs){
             if(ur.getRoom().getState().equals("complete")){
-                result.add(RoomDto.DetailResDto.from(ur.getRoom(), ur));
+                result.add(RoomDto.DetailRoomResDto.from(ur.getRoom(), ur));
             }
         }
 

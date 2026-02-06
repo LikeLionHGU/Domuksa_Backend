@@ -3,6 +3,7 @@ package org.example.emmm.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.dto.AgendaDto;
 import org.example.emmm.service.AgendaService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -12,23 +13,24 @@ public class AgendaController {
     private final AgendaService agendaService;
 
     @PostMapping("/{roomId}")
-    public AgendaDto.CreateAgendaResDto createAgenda(@PathVariable Long roomId, @RequestBody AgendaDto.CreateAgendaReqDto req) {
-        return agendaService.createAgenda(roomId, req);
+    public ResponseEntity<AgendaDto.CreateAgendaResDto> createAgenda(@PathVariable Long roomId,
+                                                                     @RequestBody AgendaDto.CreateAgendaReqDto req) {
+        return ResponseEntity.ok(agendaService.createAgenda(roomId, req));
     }
 
     @GetMapping("/{agendaId}")
-    public AgendaDto.DetailAgendaResDto getAgenda(@PathVariable Long agendaId) {
-        return agendaService.getAgenda(agendaId);
+    public ResponseEntity<AgendaDto.DetailAgendaResDto> getAgenda(@PathVariable Long agendaId) {
+        return ResponseEntity.ok(agendaService.getAgenda(agendaId));
     }
 
     @PatchMapping("/{agendaId}")
-    public AgendaDto.UpdateAgendaResDto updateAgenda(@PathVariable Long agendaId, @RequestBody AgendaDto.UpdateAgendaReqDto req) {
-        return agendaService.updateAgenda(agendaId, req);
+    public ResponseEntity<AgendaDto.UpdateAgendaResDto> updateAgenda(@PathVariable Long agendaId, @RequestBody AgendaDto.UpdateAgendaReqDto req) {
+        return ResponseEntity.ok(agendaService.updateAgenda(agendaId, req));
     }
 
     @PatchMapping("/{agendaId}/config")
-    public AgendaDto.UpdateConfigResDto updateConfig(@PathVariable Long agendaId, @RequestBody AgendaDto.UpdateConfigReqDto req) {
-        return agendaService.updateConfig(agendaId, req);
+    public ResponseEntity<AgendaDto.UpdateConfigResDto> updateConfig(@PathVariable Long agendaId, @RequestBody AgendaDto.UpdateConfigReqDto req) {
+        return ResponseEntity.ok(agendaService.updateConfig(agendaId, req));
     }
 
     @DeleteMapping("/{agendaId}")

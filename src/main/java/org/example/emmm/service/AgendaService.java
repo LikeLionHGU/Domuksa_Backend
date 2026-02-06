@@ -29,6 +29,7 @@ public class AgendaService {
                 .voteEnabled(false)
                 .commentEnabled(false)
                 .fileEnabled(false)
+                .aiSummaryEnabled(false)
                 .build();
 
         Agenda a = Agenda.builder()
@@ -79,6 +80,7 @@ public class AgendaService {
         ac.setVoteEnabled(req.isVoteEnabled());
         ac.setCommentEnabled(req.isCommentEnabled());
         ac.setFileEnabled(req.isFileEnabled());
+        ac.setAiSummaryEnabled(req.isAiSummaryEnabled());
 
         agendaRepository.save(a);
 

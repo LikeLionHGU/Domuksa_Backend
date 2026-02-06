@@ -6,7 +6,7 @@ import org.example.emmm.domain.UserRoom;
 
 public class RoomDto {
     @Getter
-    public static class CreateReqDto {
+    public static class CreateRoomReqDto {
         private String roomName;
         private String password;
     }
@@ -14,7 +14,7 @@ public class RoomDto {
     @Getter
     @Setter
     @AllArgsConstructor
-    public static class CreateResDto {
+    public static class CreateRoomResDto {
         private Long roomId;
         private String code;
         private String roomName;
@@ -37,14 +37,14 @@ public class RoomDto {
     @Getter
     @AllArgsConstructor
     @Builder
-    public static class DetailResDto {
+    public static class DetailRoomResDto {
         private Long roomId;
         private String roomName;
         private String code;
         private String state;
         private String role;
 
-        public static RoomDto.DetailResDto from(Room room, UserRoom userRoom) {
+        public static RoomDto.DetailRoomResDto from(Room room, UserRoom userRoom) {
             return builder()
                     .roomId(room.getId())
                     .roomName(room.getRoomName())
@@ -53,6 +53,19 @@ public class RoomDto {
                     .role(userRoom.getRole())
                     .build();
         }
-
     }
+
+    @Getter
+    @Setter
+    public static class UpdateRoomReqDto {
+        private String state;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class RoomStateChangedMessage {
+        private Long roomId;
+        private String state;
+    }
+
 }
