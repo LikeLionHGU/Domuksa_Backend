@@ -60,7 +60,7 @@ public class RoomService {
                 return new RoomDto.CreateRoomResDto(savedRoom.getId(), savedRoom.getCode(), savedRoom.getRoomName());
 
             } catch (DataIntegrityViolationException e) {
-                // room.code UNIQUE 충돌 -> 재시도
+                System.out.println(e.getMessage());
             }
         }
 

@@ -1,6 +1,7 @@
 package org.example.emmm.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import org.example.emmm.domain.AgendaConfig;
 import org.example.emmm.domain.Vote;
@@ -44,6 +45,24 @@ public class VoteOptionDto {
             );
         }
 
+    }
+
+    @Getter
+    public static class UpdateOptionReqDto{
+        private String content;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateOptionResDto{
+        private VoteOptionBlock voteOption;
+
+        public static VoteOptionDto.UpdateOptionResDto from(VoteOption vo) {
+            return new VoteOptionDto.UpdateOptionResDto(
+                    VoteOptionBlock.from(vo)
+            );
+        }
     }
 
 

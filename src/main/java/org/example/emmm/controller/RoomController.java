@@ -33,10 +33,10 @@ public class RoomController {
         return ResponseEntity.ok(roomService.createParticipate(req, reqId));
     }
 
-    @GetMapping("/{roomId}")
+    @GetMapping("/{roomId}/{reqId}")
     public ResponseEntity<RoomDto.DetailRoomResDto> getRoom(@PathVariable Long roomId,
-                                                            @AuthenticationPrincipal UserPrincipal principal) {
-        Long reqId = principal.getUserId();
+                                                            @PathVariable Long reqId) {
+        //Long reqId = principal.getUserId();
         return ResponseEntity.ok(roomService.getRoom(roomId, reqId));
     }
 

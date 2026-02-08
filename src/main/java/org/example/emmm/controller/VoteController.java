@@ -48,6 +48,18 @@ public class VoteController {
         return ResponseEntity.ok(voteOptionService.getVoteOption(voteId, reqId));
     }
 
+    //voteOption의 content내용 변경
+    @PatchMapping("/{voteOptionId}")
+    public ResponseEntity<VoteOptionDto.UpdateOptionResDto> updateVoteOption(@PathVariable Long voteOptionId,
+                                                                             @RequestBody VoteOptionDto.UpdateOptionReqDto req){
+        return ResponseEntity.ok(voteOptionService.updateOption(voteOptionId, req));
+    }
+
+    //voteOption 삭제하기
+    @PatchMapping("/{voteOptionId}")
+    public void deleteVoteOption(@PathVariable Long voteOptionId) {
+        voteOptionService.deleteOption(voteOptionId);
+    }
 
     //voteSelection으로 내 투표 내용 저장하기
     @PostMapping("/{voteId}")
@@ -56,5 +68,14 @@ public class VoteController {
                                                                                 @AuthenticationPrincipal UserPrincipal principal){
         Long reqId = principal.getUserId();
         return ResponseEntity.ok(voteSelectionService.createVoteSelection(voteId, reqId, req));
+    }
+
+    //voteSelection의 내 투표 내용 수정하기
+    @PatchMapping("/{voteId}/voteSelect")
+    public ResponseEntity<VoteSelectionDto.UpdateSelectResDto> updateVoteSelect(@RequestBody VoteSelectionDto.UpdateSelectReqDto req,
+                                                                                @PathVariable Long voteId,
+                                                                                @AuthenticationPrincipal UserPrincipal principal){
+        Long reqId = principal.getUserId();
+        return ResponseEntity.ok(voteSelectionService.updateVoteSelection(voteId, reqId, req));
     }
 }
