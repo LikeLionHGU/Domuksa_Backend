@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface VoteSelectionRepository extends JpaRepository<VoteSelection, Long> {
     Optional<VoteSelection> findByUserIdAndVoteIdAndDeletedFalse(Long userId, Long voteId);
+
+    int countByVoteOptionIdAndDeletedFalse(Long id);
 }

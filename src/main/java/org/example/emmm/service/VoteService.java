@@ -1,5 +1,6 @@
 package org.example.emmm.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.domain.Agenda;
 import org.example.emmm.domain.AgendaConfig;
@@ -17,6 +18,7 @@ public class VoteService {
     private final VoteRepository voteRepository;
     private final AgendaRepository agendaRepository;
 
+    @Transactional
     public VoteDto.CreateVoteResDto createVoteTemplate(Long agendaId,VoteDto.CreateVoteReqDto req){
         Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
@@ -35,6 +37,7 @@ public class VoteService {
         return VoteDto.CreateVoteResDto.from(v, ac);
     }
 
+    @Transactional
     public VoteDto.DetailVoteResDto getVoteTemplate(Long agendaId){
         agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));

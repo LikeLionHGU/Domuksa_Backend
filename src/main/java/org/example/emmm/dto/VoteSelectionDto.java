@@ -27,4 +27,28 @@ public class VoteSelectionDto {
                     .build();
         }
     }
+
+    @Getter
+    public static class UpdateSelectReqDto{
+        private Long voteOptionId;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class UpdateSelectResDto{
+        private Long voteSelectionId;
+        private Long voteId;
+        private Long voteOptionId;
+        private Long userId;
+
+        public static UpdateSelectResDto from(VoteSelection vs){
+            return builder()
+                    .voteSelectionId(vs.getId())
+                    .voteId(vs.getVote().getId())
+                    .voteOptionId(vs.getVoteOption().getId())
+                    .userId(vs.getUser().getId())
+                    .build();
+        }
+    }
 }

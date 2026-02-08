@@ -1,5 +1,6 @@
 package org.example.emmm.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.domain.User;
 import org.example.emmm.domain.Vote;
@@ -22,6 +23,7 @@ public class VoteSelectionService {
     private final UserRepository userRepository;
     private final VoteOptionRepository voteOptionRepository;
 
+    @Transactional
     public VoteSelectionDto.CreateSelectResDto createVoteSelection(Long voteId, Long userId, VoteSelectionDto.CreateSelectReqDto req) {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
@@ -44,5 +46,25 @@ public class VoteSelectionService {
 
         return VoteSelectionDto.CreateSelectResDto.from(vs);
 
+    }
+
+    @Transactional
+    public VoteSelectionDto.UpdateSelectResDto updateVoteSelection(Long voteId, Long userId, VoteSelectionDto.UpdateSelectReqDto req) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+
+        VoteSelection vs = voteSelectionRepository.findByUserIdAndVoteIdAndDeletedFalse(u.getId(), v.getId())
+                .orElseThrow(() -> new IllegalArgumentException("수정할 투표 내역이 존재하지 않습니다."));
+
+        VoteOption newOption = voteOptionRepository.findByIdAndDeletedFalse(req.getVoteOptionId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표 옵션입니다."));
+
+        vs.setVoteOption(newOption);
+        vs.setModifiedAt(LocalDateTime.now());
+
+        return VoteSelectionDto.UpdateSelectResDto.from(vs);
     }
 }
