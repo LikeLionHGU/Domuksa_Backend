@@ -5,13 +5,11 @@ import org.example.emmm.dto.FileDto;
 import org.example.emmm.service.FileService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/file")
@@ -24,5 +22,11 @@ public class FileController {
     public ResponseEntity<FileDto.CreateFileResDto> postFile(@RequestPart("file") MultipartFile file) throws IOException {
         FileDto.CreateFileResDto response = fileService.uploadFile(file, "domuksa/");
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<FileDto.FileListResDto>> getFile(@RequestParam Long agendaId){
+        List<FileDto.FileListResDto> files = fileService.getFile(agendaId);
+        return ResponseEntity.ok(files);
     }
 }

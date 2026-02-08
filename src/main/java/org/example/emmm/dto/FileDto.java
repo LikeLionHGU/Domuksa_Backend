@@ -28,5 +28,22 @@ public class FileDto {
                     .build();
         }
     }
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @Builder
+    public static class FileListResDto{//get
+        private Long id;
+        private String fileName;
+        private String fileUrl;
+        public static FileDto.FileListResDto from(File file){
+            return builder()
+                    .id(file.getFileId())
+                    .fileName(file.getFileName())
+                    .fileUrl(file.getFileUrl())
+                    .build();
+
+        }
+    }
 
 }
