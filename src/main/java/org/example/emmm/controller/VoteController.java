@@ -56,7 +56,7 @@ public class VoteController {
     }
 
     //voteOption 삭제하기
-    @PatchMapping("/{voteOptionId}")
+    @DeleteMapping("/{voteOptionId}")
     public void deleteVoteOption(@PathVariable Long voteOptionId) {
         voteOptionService.deleteOption(voteOptionId);
     }
