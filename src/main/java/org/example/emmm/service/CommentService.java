@@ -4,51 +4,48 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.domain.Agenda;
 import org.example.emmm.domain.AgendaConfig;
-import org.example.emmm.domain.Vote;
-import org.example.emmm.dto.VoteDto;
+import org.example.emmm.domain.Comment;
+import org.example.emmm.dto.CommentDto;
 import org.example.emmm.repository.AgendaConfigRepository;
 import org.example.emmm.repository.AgendaRepository;
-import org.example.emmm.repository.VoteRepository;
+import org.example.emmm.repository.CommentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class VoteService {
-    private final VoteRepository voteRepository;
+public class CommentService {
+    private final CommentRepository commentRepository;
     private final AgendaRepository agendaRepository;
     private final AgendaConfigRepository agendaConfigRepository;
 
     @Transactional
-    public VoteDto.CreateVoteResDto createVoteTemplate(Long agendaId,VoteDto.CreateVoteReqDto req){
+    public CommentDto.CreateCommentResDto createCommentTemplate(Long agendaId, CommentDto.CreateCommentReqDto req) {
         Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
-
-        Vote v = Vote.builder()
-                .deleted(false)
-                .createdAt(LocalDateTime.now())
+        Comment c = Comment.builder()
                 .title(req.getTitle())
-                .voteStatus("running")
+                .createdAt(LocalDateTime.now())
                 .agenda(a)
                 .build();
 
-        AgendaConfig ac = v.getAgenda().getConfig();
-        ac.setVoteEnabled(true);
+        AgendaConfig ac = c.getAgenda().getConfig();
+        ac.setCommentEnabled(true);
         agendaConfigRepository.save(ac);
 
-        voteRepository.save(v);
-        return VoteDto.CreateVoteResDto.from(v, ac);
+        commentRepository.save(c);
+
+        return CommentDto.CreateCommentResDto.from(c, ac);
     }
 
-    @Transactional
-    public VoteDto.DetailVoteResDto getVoteTemplate(Long agendaId){
-        agendaRepository.findByIdAndDeletedFalse(agendaId)
+    public CommentDto.DetailCommentResDto getCommentTemplate(Long agendaId) {
+        Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
 
-        Vote v = voteRepository.findByAgendaIdAndDeletedFalse(agendaId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+        Comment c = commentRepository.findByAgendaAndDeletedFalse(a)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코멘트입니다."));
 
-        return VoteDto.DetailVoteResDto.from(v);
+        return CommentDto.DetailCommentResDto.from(c);
     }
 }
