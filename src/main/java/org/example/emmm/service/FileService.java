@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.example.emmm.domain.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -63,6 +64,14 @@ public class FileService {
         File saved = fileRepository.save(f);
         return FileDto.CreateFileResDto.from(saved);//s3에 파일 저장
 
+
+
+    }
+    public List<FileDto.FileListResDto> getFile(Long agendaId){
+        return fileRepository.findByAgendaId(agendaId)
+                .stream()
+                .map(FileDto.FileListResDto::from)
+                .toList();
 
 
     }
