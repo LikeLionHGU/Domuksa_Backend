@@ -55,7 +55,10 @@ public class AgendaService {
 
         AgendaConfig ac = a.getConfig();
 
-        return AgendaDto.DetailAgendaResDto.from(a, ac);
+        Room r = a.getRoom();
+        int currentAgendaSequence = r.getCurrentAgendaSequence();
+
+        return AgendaDto.DetailAgendaResDto.from(a, ac,  currentAgendaSequence);
     }
 
     @Transactional

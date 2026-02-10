@@ -3,9 +3,11 @@ package org.example.emmm.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.dto.CommentDto;
 import org.example.emmm.dto.CommentOptionDto;
+import org.example.emmm.security.UserPrincipal;
 import org.example.emmm.service.CommentOptionService;
 import org.example.emmm.service.CommentService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +22,10 @@ public class CommentController {
     //commentTemplate 생성
     @PostMapping("/{agendaId}")
     public ResponseEntity<CommentDto.CreateCommentResDto> createCommentTemplate(@PathVariable Long agendaId,
-                                                                        @RequestBody CommentDto.CreateCommentReqDto req) {
-        return ResponseEntity.ok(commentService.createCommentTemplate(agendaId, req));
+                                                                                @RequestBody CommentDto.CreateCommentReqDto req,
+                                                                                @AuthenticationPrincipal UserPrincipal principal) {
+        Long reqId = principal.getUserId();
+        return ResponseEntity.ok(commentService.createCommentTemplate(agendaId, reqId, req));
     }
 
     //commentTemplate정보 가져오기

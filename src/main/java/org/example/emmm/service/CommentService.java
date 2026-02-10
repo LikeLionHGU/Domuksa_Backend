@@ -2,13 +2,9 @@ package org.example.emmm.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.emmm.domain.Agenda;
-import org.example.emmm.domain.AgendaConfig;
-import org.example.emmm.domain.Comment;
+import org.example.emmm.domain.*;
 import org.example.emmm.dto.CommentDto;
-import org.example.emmm.repository.AgendaConfigRepository;
-import org.example.emmm.repository.AgendaRepository;
-import org.example.emmm.repository.CommentRepository;
+import org.example.emmm.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,11 +15,27 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final AgendaRepository agendaRepository;
     private final AgendaConfigRepository agendaConfigRepository;
+    private final UserRepository userRepository;
+    private final UserRoomRepository userRoomRepository;
 
     @Transactional
-    public CommentDto.CreateCommentResDto createCommentTemplate(Long agendaId, CommentDto.CreateCommentReqDto req) {
+    public CommentDto.CreateCommentResDto createCommentTemplate(Long agendaId, Long reqId,CommentDto.CreateCommentReqDto req) {
         Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
+
+        User u = userRepository.findByIdAndDeletedFalse(reqId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        UserRoom ur = userRoomRepository.findByUserAndRoom(u, a.getRoom())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저룸입니다."));
+
+        if(!ur.getRole().equals("host")){
+            throw new IllegalArgumentException("호스트가 아닙니다.");
+        } else {
+
+
+        }
+
         Comment c = Comment.builder()
                 .title(req.getTitle())
                 .createdAt(LocalDateTime.now())

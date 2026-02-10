@@ -42,6 +42,7 @@ public class RoomDto {
         private String roomName;
         private String code;
         private String state;
+        private int currentAgendaSequence;
         private String role;
 
         public static RoomDto.DetailRoomResDto from(Room room, UserRoom userRoom) {
@@ -50,6 +51,7 @@ public class RoomDto {
                     .roomName(room.getRoomName())
                     .code(room.getCode())
                     .state(room.getState())
+                    .currentAgendaSequence(room.getCurrentAgendaSequence())
                     .role(userRoom.getRole())
                     .build();
         }

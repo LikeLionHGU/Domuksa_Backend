@@ -125,16 +125,16 @@ public class RoomService {
     }
 
     @Transactional
-    public List<AgendaDto.DetailAgendaResDto> getAgendas(Long roomId) {
+    public List<AgendaDto.DetailListAgendaResDto> getAgendas(Long roomId) {
         roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
         List<Agenda> agendas = agendaRepository.findByRoomId(roomId);
 
-        List<AgendaDto.DetailAgendaResDto> res = new ArrayList<>();
+        List<AgendaDto.DetailListAgendaResDto> res = new ArrayList<>();
         for(Agenda a : agendas) {
             AgendaConfig ac = a.getConfig();
-            res.add(AgendaDto.DetailAgendaResDto.from(a, ac));
+            res.add(AgendaDto.DetailListAgendaResDto.from(a, ac));
         }
 
         return res;
