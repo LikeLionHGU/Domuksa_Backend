@@ -34,13 +34,26 @@ public class AgendaDto {
     public static class DetailAgendaResDto {
         private AgendaBlock agenda;
         private ConfigBlock config;
+        private int currentAgendaSequence;
 
-        public static DetailAgendaResDto from(Agenda agenda, AgendaConfig config) {
+        public static DetailAgendaResDto from(Agenda agenda, AgendaConfig config, int currentAgendaSequence) {
             return new DetailAgendaResDto(
+                    AgendaBlock.from(agenda), ConfigBlock.from(config), currentAgendaSequence
+            );
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class DetailListAgendaResDto {
+        private AgendaBlock agenda;
+        private ConfigBlock config;
+
+        public static DetailListAgendaResDto from(Agenda agenda, AgendaConfig config) {
+            return new DetailListAgendaResDto(
                     AgendaBlock.from(agenda), ConfigBlock.from(config)
             );
         }
-
     }
 
     @Getter

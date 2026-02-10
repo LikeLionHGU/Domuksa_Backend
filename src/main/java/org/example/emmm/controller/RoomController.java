@@ -49,7 +49,7 @@ public class RoomController {
 
     //room에대한 agenda의 모든 정보 다 가져오기
     @GetMapping("/{roomId}/agenda")
-    public ResponseEntity<List<AgendaDto.DetailAgendaResDto>> getAgendas(@PathVariable Long roomId) {
+    public ResponseEntity<List<AgendaDto.DetailListAgendaResDto>> getAgendas(@PathVariable Long roomId) {
         return ResponseEntity.ok(roomService.getAgendas(roomId));
     }
 
