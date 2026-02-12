@@ -13,6 +13,7 @@ import org.example.emmm.util.RoomCodeGenerator;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,14 +34,17 @@ public class RoomService {
         User host = userRepository.findByIdAndDeletedFalse(hostUserId)
                 .orElseThrow(() -> new IllegalArgumentException("host user not found"));
 
+        boolean isPassword = StringUtils.hasText(req.getPassword());
+
         for (int attempt = 0; attempt < 10; attempt++) {
             String code = RoomCodeGenerator.generate(10);
 
             Room room = Room.builder()
                     .createdAt(LocalDateTime.now())
                     .roomName(req.getRoomName())
-                    .password(req.getPassword())
+                    .password(isPassword ? req.getPassword() : null)
                     .currentAgendaSequence(1)
+                    .isPassword(isPassword)
                     .code(code)
                     .state("running")
                     .build();
@@ -67,13 +71,52 @@ public class RoomService {
         throw new IllegalStateException("Failed to generate unique room code");
     }
 
+    //password 있는 방 참여
     @Transactional
-    public RoomDto.ParticipateCreateResDto createParticipate(RoomDto.ParticipateCreateReqDto req, Long userId) {
+    public RoomDto.ParticipatePasswordCreateResDto createParticipatePassword(RoomDto.ParticipatePasswordCreateReqDto req, Long roomId, Long userId) {
         User u = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        Room r = roomRepository.findByCodeAndDeletedFalse(req.getCode())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코드입니다."));
+        Room r = roomRepository.findByIdAndDeletedFalse(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
+
+        boolean isAlreadyJoined = userRoomRepository.existsByRoomAndUser(r, u);
+        if (isAlreadyJoined) {
+            throw new IllegalStateException("이미 참여 중인 방입니다.");
+        }
+
+        if (r.getPassword() != null && r.getPassword().equals(req.getPassword())) {
+            UserRoom ur = UserRoom.builder()
+                    .room(r)
+                    .user(u)
+                    .role("member")
+                    .state("active")
+                    .build();
+
+            userRoomRepository.save(ur);
+            return new RoomDto.ParticipatePasswordCreateResDto(r.getId(), ur.getId(), ur.getRole());
+        } else {
+            throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
+        }
+    }
+
+    // password가 없는 방 참여
+    @Transactional
+    public RoomDto.ParticipateCreateResDto createParticipate(Long roomId, Long userId) {
+        User u = userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        Room r = roomRepository.findByIdAndDeletedFalse(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
+
+        if (Boolean.TRUE.equals(r.getIsPassword())) {
+            throw new IllegalStateException("비밀번호가 필요한 방입니다. 비밀번호 입력 API를 사용하세요.");
+        }
+
+        boolean isAlreadyJoined = userRoomRepository.existsByRoomAndUser(r, u);
+        if (isAlreadyJoined) {
+            throw new IllegalStateException("이미 참여 중인 방입니다.");
+        }
 
         UserRoom ur = UserRoom.builder()
                 .room(r)
@@ -83,8 +126,14 @@ public class RoomService {
                 .build();
 
         userRoomRepository.save(ur);
-
         return new RoomDto.ParticipateCreateResDto(r.getId(), ur.getId(), ur.getRole());
+    }
+
+    //code를 주면 이를 확인해서 roomId와 password가 있는지 판단해서 줌
+    public RoomDto.CodeResDto getRoomIdAndIsPassword (String code) {
+        Room r = roomRepository.findByCodeAndDeletedFalse(code)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
+        return RoomDto.CodeResDto.from(r);
     }
 
     public RoomDto.DetailRoomResDto getRoom(Long roomId, Long userId) {
@@ -94,10 +143,36 @@ public class RoomService {
         User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        UserRoom userRoom = userRoomRepository.findByUserAndRoom(user, room)
+        UserRoom userRoom = userRoomRepository.findActiveUserRoom(user, room)
                 .orElseThrow(() -> new IllegalArgumentException("이 방에 참여하지 않은 유저입니다."));
 
         return RoomDto.DetailRoomResDto.from(room, userRoom);
+    }
+
+    @Transactional
+    public RoomDto.UpdateRoomNameResDto updateRoomNameAndPassword(RoomDto.UpdateRoomNameReqDto req, Long roomId, Long userId) {
+        User u = userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        Room r = roomRepository.findByIdAndDeletedFalse(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
+
+        UserRoom ur = userRoomRepository.findActiveUserRoom(u, r)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저룸입니다."));
+
+        if (!"host".equals(ur.getRole())) {
+            throw new IllegalStateException("당신은 호스트가 아닙니다.");
+        }
+
+        if(StringUtils.hasText(req.getName())){
+            r.setRoomName(req.getName());
+        }
+
+        if(StringUtils.hasText(req.getPassword())){
+            r.setPassword(req.getPassword());
+        }
+
+        return RoomDto.UpdateRoomNameResDto.from(r);
     }
 
     @Transactional
@@ -108,13 +183,13 @@ public class RoomService {
         User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        UserRoom userRoom = userRoomRepository.findByUserAndRoom(user, room)
+        UserRoom userRoom = userRoomRepository.findActiveUserRoom(user, room)
                 .orElseThrow(() -> new IllegalArgumentException("이 방에 참여하지 않은 유저입니다."));
 
         if ("host".equals(userRoom.getRole())) {
             room.setDeleted(true);
 
-            List<UserRoom> allMembers = userRoomRepository.findAllByRoom(room);
+            List<UserRoom> allMembers = userRoomRepository.findAllActiveMembersByRoom(room);
             for (UserRoom ur : allMembers) {
                 ur.setDeleted(true);
             }
@@ -129,7 +204,7 @@ public class RoomService {
         roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
-        List<Agenda> agendas = agendaRepository.findByRoomId(roomId);
+        List<Agenda> agendas = agendaRepository.findByRoomIdAndDeletedFalse(roomId);
 
         List<AgendaDto.DetailListAgendaResDto> res = new ArrayList<>();
         for(Agenda a : agendas) {
@@ -141,7 +216,7 @@ public class RoomService {
     }
 
     @Transactional
-    public void updateRoomState(RoomDto.UpdateRoomReqDto req, Long roomId, Long userId) {
+    public void updateRoomState(Long roomId, Long userId) {
 
         Room r = roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
@@ -149,7 +224,7 @@ public class RoomService {
         User u = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        UserRoom ur = userRoomRepository.findByUserAndRoom(u, r)
+        UserRoom ur = userRoomRepository.findActiveUserRoom(u, r)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         if (!"host".equals(ur.getRole())) {

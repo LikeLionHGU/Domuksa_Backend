@@ -10,4 +10,7 @@ public interface CommentOptionRepository extends JpaRepository<CommentOption, Lo
     List<CommentOption> findAllByCommentIdAndDeletedFalse(Long commentId);
 
     Optional<CommentOption> findByIdAndDeletedFalse(Long commentOptionId);
+
+    List<CommentOption> findAllByCommentIdInAndDeletedFalse(List<Long> commentIds);
+
 }

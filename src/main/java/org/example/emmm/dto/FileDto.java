@@ -10,6 +10,7 @@ public class FileDto {
     @Getter
     @Setter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class CreateFileResDto{//post
         private Long fileId;
@@ -20,8 +21,8 @@ public class FileDto {
 
         public static FileDto.CreateFileResDto from(File file){
             return builder()
-                    .fileId(file.getFileId())
-                    .agendaId(file.getAgendaId())
+                    .fileId(file.getId())
+                    .agendaId(file.getAgenda().getId())
                     .fileName(file.getFileName())
                     .fileUrl(file.getFileUrl())
                     .s3Key(file.getS3Key())
@@ -31,6 +32,7 @@ public class FileDto {
     @Getter
     @Setter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class FileListResDto{//get
         private Long id;
@@ -38,7 +40,7 @@ public class FileDto {
         private String fileUrl;
         public static FileDto.FileListResDto from(File file){
             return builder()
-                    .id(file.getFileId())
+                    .id(file.getId())
                     .fileName(file.getFileName())
                     .fileUrl(file.getFileUrl())
                     .build();

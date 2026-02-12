@@ -89,6 +89,18 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+
+    // JSON 직렬화(보통 기본 포함이지만 명시)
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // S3 다운로드/Presigned URL/오브젝트 접근
+    implementation 'software.amazon.awssdk:s3:2.25.65'
+
+    // (선택) PDF 텍스트 추출 - 가장 무난
+    implementation 'org.apache.pdfbox:pdfbox:2.0.31'
+
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 }
 
 tasks.named('test') {
