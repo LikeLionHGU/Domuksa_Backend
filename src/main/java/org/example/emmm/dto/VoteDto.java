@@ -31,18 +31,44 @@ public class VoteDto {
     @NoArgsConstructor
     @Builder
     public static class DetailVoteResDto{
-        private Long VoteId;
+        private Long voteId;
         private Long agendaId;
         private String title;
 
         public static VoteDto.DetailVoteResDto from(Vote vote) {
             return builder()
-                    .VoteId(vote.getId())
+                    .voteId(vote.getId())
                     .agendaId(vote.getAgenda().getId())
                     .title(vote.getTitle())
                     .build();
         }
     }
+
+    @Getter
+    public static class UpdateVoteReqDto{
+        private String title;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class UpdateVoteResDto{
+        private Long voteId;
+        private Long agendaId;
+        private String title;
+
+        public static VoteDto.UpdateVoteResDto from(Vote v) {
+            return builder()
+                    .voteId(v.getId())
+                    .agendaId(v.getAgenda().getId())
+                    .title(v.getTitle())
+                    .build();
+        }
+    }
+
+
+
 
     @Getter
     @AllArgsConstructor

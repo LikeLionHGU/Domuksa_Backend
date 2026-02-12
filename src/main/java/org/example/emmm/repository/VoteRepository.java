@@ -5,14 +5,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface VoteRepository extends JpaRepository<Vote, Long> {
 
     @Query("SELECT v FROM Vote v " +
             "WHERE v.agenda.id = :agendaId " +
-            "AND v.deleted = false " +    // 투표 자체가 삭제되지 않았고
-            "AND v.agenda.deleted = false") // 연결된 안건도 삭제되지 않은 경우
+            "AND v.deleted = false " +
+            "AND v.agenda.deleted = false")
+    List<Vote> findAllActiveByAgendaId(@Param("agendaId") Long agendaId);
+
+    @Query("SELECT v FROM Vote v " +
+            "WHERE v.agenda.id = :agendaId " +
+            "AND v.deleted = false " +
+            "AND v.agenda.deleted = false")
     Optional<Vote> findActiveByAgendaId(@Param("agendaId") Long agendaId);
 
     Optional<Vote> findByIdAndDeletedFalse(Long voteId);
