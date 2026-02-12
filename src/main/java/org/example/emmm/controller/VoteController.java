@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -28,20 +30,34 @@ public class VoteController {
         return ResponseEntity.ok(voteService.createVoteTemplate(agendaId, req));
     }
 
-    //해당 안건과 그의 투표 아이디 + 이름 가져오기
+    //해당 안건과 그의 해당하는 모든 투표 아이디 + 이름 가져오기
     @GetMapping("/{agendaId}")
-    public ResponseEntity<VoteDto.DetailVoteResDto> getVoteTemplate(@PathVariable Long agendaId){
-        return ResponseEntity.ok(voteService.getVoteTemplate(agendaId));
+    public ResponseEntity<List<VoteDto.DetailVoteResDto>> getVote(@PathVariable Long agendaId){
+        return ResponseEntity.ok(voteService.getVote(agendaId));
     }
 
+    //투표 제목 수정하기
+    @PatchMapping("/{voteId}")
+    public ResponseEntity<VoteDto.UpdateVoteResDto> updateVote(@PathVariable Long voteId,
+                                                               @RequestBody VoteDto.UpdateVoteReqDto req){
+        return ResponseEntity.ok(voteService.updateVote(voteId, req));
+    }
+
+    //Vote 삭제하기
+    @DeleteMapping("/{voteId}")
+    public ResponseEntity<String> deleteVote(@PathVariable Long voteId){
+        return ResponseEntity.ok(voteService.deleteVote(voteId));
+    }
+
+
     //voteOption 만들기
-    @PostMapping("/{voteId}/voteOption")
+    @PostMapping("/{voteId}/option")
     public ResponseEntity<VoteOptionDto.CreateOptionResDto> createVoteOption(@PathVariable Long voteId, @RequestBody VoteOptionDto.CreateOptionReqDto req){
         return ResponseEntity.ok(voteOptionService.createVoteOption(voteId, req));
     }
 
     //해당 안건의 vote, voteOption, mySelection 모두 List로 get하기
-    @GetMapping("/{voteId}")
+    @GetMapping("/{voteId}/option")
     public ResponseEntity<VoteOptionDto.DetailOptionResDto> getVoteOption(@PathVariable Long voteId,
                                                                           @AuthenticationPrincipal UserPrincipal principal){
         Long reqId = principal.getUserId();
@@ -49,20 +65,20 @@ public class VoteController {
     }
 
     //voteOption의 content내용 변경
-    @PatchMapping("/{voteOptionId}")
+    @PatchMapping("/{voteOptionId}/option")
     public ResponseEntity<VoteOptionDto.UpdateOptionResDto> updateVoteOption(@PathVariable Long voteOptionId,
                                                                              @RequestBody VoteOptionDto.UpdateOptionReqDto req){
         return ResponseEntity.ok(voteOptionService.updateOption(voteOptionId, req));
     }
 
     //voteOption 삭제하기
-    @DeleteMapping("/{voteOptionId}")
+    @DeleteMapping("/{voteOptionId}/option")
     public void deleteVoteOption(@PathVariable Long voteOptionId) {
         voteOptionService.deleteOption(voteOptionId);
     }
 
     //voteSelection으로 내 투표 내용 저장하기
-    @PostMapping("/{voteId}")
+    @PostMapping("/{voteId}/voteSelect")
     public ResponseEntity<VoteSelectionDto.CreateSelectResDto> createVoteSelect(@RequestBody VoteSelectionDto.CreateSelectReqDto req,
                                                                                 @PathVariable Long voteId,
                                                                                 @AuthenticationPrincipal UserPrincipal principal){

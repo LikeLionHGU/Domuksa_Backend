@@ -16,4 +16,7 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
             "WHERE a.room.id = :roomId " +
             "AND a.deleted = false " +
             "AND a.room.deleted = false")
-    List<Agenda> findAllActiveByRoomId(@Param("roomId") Long roomId);}
+    List<Agenda> findAllActiveByRoomId(@Param("roomId") Long roomId);
+
+    boolean existsByIdAndDeletedFalse(Long agendaId);
+}
