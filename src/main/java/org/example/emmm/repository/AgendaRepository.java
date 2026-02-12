@@ -9,5 +9,5 @@ import java.util.Optional;
 public interface AgendaRepository extends JpaRepository<Agenda, Long> {
     Optional<Agenda> findByIdAndDeletedFalse(Long agendaId);
 
-    List<Agenda> findByRoomId(Long roomId);
+    List<Agenda> findByRoomIdAndDeletedFalse(Long roomId);
 }

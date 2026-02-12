@@ -56,6 +56,7 @@ public class AgendaService {
         AgendaConfig ac = a.getConfig();
 
         Room r = a.getRoom();
+        r.setCurrentAgendaSequence(a.getSequence());
         int currentAgendaSequence = r.getCurrentAgendaSequence();
 
         return AgendaDto.DetailAgendaResDto.from(a, ac,  currentAgendaSequence);
@@ -99,6 +100,8 @@ public class AgendaService {
 
         ac.setDeleted(true);
         a.setDeleted(true);
+
+        agendaRepository.saveAndFlush(a);
     }
 
 }

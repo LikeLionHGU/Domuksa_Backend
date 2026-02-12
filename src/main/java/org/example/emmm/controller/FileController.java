@@ -18,6 +18,7 @@ public class FileController {
 
     private final FileService fileService;
 
+    //Todo: agendaId 받아오기 + service의 parameter로 받기
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FileDto.CreateFileResDto> postFile(@RequestPart("file") MultipartFile file) throws IOException {
         FileDto.CreateFileResDto response = fileService.uploadFile(file, "domuksa/");

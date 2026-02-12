@@ -28,7 +28,8 @@ public class FileService {
     private final AmazonS3Client amazonS3Client;
     private final FileRepository fileRepository;
 
-    public FileDto.CreateFileResDto uploadFile(MultipartFile file, String dirName)throws IOException {
+    //Todo: parameter controller에서 바뀐대로 수정 + agendaId로 agenda 해당 agenda 불러오기 + agenda(null) 이거 null에 agenda로 바꾸기
+    public FileDto.CreateFileResDto uploadFile(MultipartFile file, String dirName) throws IOException {
 
         if (file == null||file.isEmpty()) {
             throw new IllegalArgumentException("파일이 없습니다");
@@ -55,7 +56,7 @@ public class FileService {
         String s3Url = amazonS3Client.getUrl(bucket, uuidFileName).toString();//s3가 준 Url저장
 
         File f = File.builder()
-                .agendaId(null)
+                .agenda(null)
                 .fileName(originalFileName)
                 .fileUrl(s3Url)
                 .s3Key(uuidFileName)
@@ -63,17 +64,14 @@ public class FileService {
 
         File saved = fileRepository.save(f);
         return FileDto.CreateFileResDto.from(saved);//s3에 파일 저장
-
-
-
     }
+
+
     public List<FileDto.FileListResDto> getFile(Long agendaId){
         return fileRepository.findByAgendaId(agendaId)
                 .stream()
                 .map(FileDto.FileListResDto::from)
                 .toList();
-
-
     }
 }
 
