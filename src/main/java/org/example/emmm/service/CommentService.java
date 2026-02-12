@@ -55,7 +55,7 @@ public class CommentService {
         Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
 
-        Comment c = commentRepository.findByAgendaAndDeletedFalse(a)
+        Comment c = commentRepository.findActiveByAgenda(a)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코멘트입니다."));
 
         return CommentDto.DetailCommentResDto.from(c);

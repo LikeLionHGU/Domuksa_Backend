@@ -38,7 +38,7 @@ public class CommentOptionService {
         Comment c = commentRepository.findByIdAndDeletedFalse(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코멘트입니다."));
 
-        List<CommentOption> cos = commentOptionRepository.findAllByCommentIdAndDeletedFalse(commentId);
+        List<CommentOption> cos = commentOptionRepository.findAllActiveByCommentId(commentId);
 
         return CommentOptionDto.DetailCommentOptionResDto.from(c, cos);
     }

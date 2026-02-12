@@ -204,7 +204,7 @@ public class RoomService {
         roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
-        List<Agenda> agendas = agendaRepository.findByRoomIdAndDeletedFalse(roomId);
+        List<Agenda> agendas = agendaRepository.findAllActiveByRoomId(roomId);
 
         List<AgendaDto.DetailListAgendaResDto> res = new ArrayList<>();
         for(Agenda a : agendas) {
@@ -216,7 +216,7 @@ public class RoomService {
     }
 
     @Transactional
-    public void updateRoomState(Long roomId, Long userId) {
+    public String updateRoomState(Long roomId, Long userId) {
 
         Room r = roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
@@ -243,6 +243,8 @@ public class RoomService {
                 "/topic/rooms/" + roomId,
                 new RoomDto.RoomStateChangedMessage(r.getId(), r.getState())
         );
+
+        return r.getState();
     }
 
 }

@@ -24,4 +24,22 @@ public class AiDto {
                     .build();
         }
     }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class DetailAiResDto {
+        private Long id;
+        private Long agendaId;
+        private String summaryText;
+
+        public static DetailAiResDto from(Ai ai) {
+            return builder()
+                    .id(ai.getId())
+                    .agendaId(ai.getAgenda().getId())
+                    .summaryText(ai.getSummaryText())
+                    .build();
+        }
+    }
 }
