@@ -80,10 +80,10 @@ public class RoomController {
 
     //해당 방의 웹소켓 적용해서 진행중/완료됨 상태 변환하기
     @PatchMapping("/{roomId}/state")
-    public void updateRoomState(@AuthenticationPrincipal UserPrincipal principal,
+    public String updateRoomState(@AuthenticationPrincipal UserPrincipal principal,
                                 @PathVariable Long roomId) {
         Long reqId = principal.getUserId();
-        roomService.updateRoomState(roomId, reqId);
+        return roomService.updateRoomState(roomId, reqId);
     }
 
 }

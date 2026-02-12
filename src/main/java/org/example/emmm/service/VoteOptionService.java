@@ -49,12 +49,12 @@ public class VoteOptionService {
         Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
 
-        List<VoteOption> vos = voteOptionRepository.findAllByVoteIdAndDeletedFalse(v.getId());
+        List<VoteOption> vos = voteOptionRepository.findAllActiveByVoteId(v.getId());
         if (vos.isEmpty()) {
             throw new IllegalArgumentException("투표 옵션이 존재하지 않습니다.");
         }
 
-        VoteSelection vs = voteSelectionRepository.findByUserIdAndVoteIdAndDeletedFalse(u.getId(), v.getId()).orElse(null);
+        VoteSelection vs = voteSelectionRepository.findActiveVoteSelection(u.getId(), v.getId()).orElse(null);
 
         for(VoteOption vo : vos) {
             int sc = voteSelectionRepository.countByVoteOptionIdAndDeletedFalse(vo.getId());

@@ -18,7 +18,6 @@ public class GeminiWebClientConfig {
         return WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                // ✅ Gemini 인증 헤더
                 .defaultHeader("x-goog-api-key", apiKey)
                 .build();
     }

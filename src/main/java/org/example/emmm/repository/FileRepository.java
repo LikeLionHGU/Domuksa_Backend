@@ -1,6 +1,5 @@
 package org.example.emmm.repository;
 
-import org.apache.http.entity.FileEntity;
 import org.example.emmm.domain.File;
 import org.springframework.data.jpa.repository.JpaRepository;
 

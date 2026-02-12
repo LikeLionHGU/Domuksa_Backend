@@ -70,10 +70,10 @@ public class AiService {
 
         // 3) Vote + VoteOption(selectCount)
         AiMaterialDto.VoteItem voteItem = null;
-        Vote vote = voteRepository.findByAgendaIdAndDeletedFalse(agendaId).orElse(null);
+        Vote vote = voteRepository.findActiveByAgendaId(agendaId).orElse(null);
 
         if (vote != null) {
-            List<VoteOption> options = voteOptionRepository.findAllByVoteIdAndDeletedFalse(vote.getId());
+            List<VoteOption> options = voteOptionRepository.findAllActiveByVoteId(vote.getId());
             // ✅ DB의 selectCount가 항상 최신이라는 보장이 없어서, 요약에서는 "실제 선택 수"를 즉시 계산
             List<AiMaterialDto.VoteOptionItem> optionItems = options.stream()
                     .map(o -> {
@@ -90,7 +90,7 @@ public class AiService {
         }
 
         // 4) Comments + CommentOption(contents 전부)
-        List<Comment> comments = commentRepository.findAllByAgendaIdAndDeletedFalse(agendaId);
+        List<Comment> comments = commentRepository.findAllActiveByAgendaId(agendaId);
         List<AiMaterialDto.CommentItem> commentItems;
 
         if (comments.isEmpty()) {
@@ -98,7 +98,7 @@ public class AiService {
         } else {
             List<Long> commentIds = comments.stream().map(Comment::getId).toList();
             // ✅ deleted=false 필터 버전 사용 (삭제된 옵션이 요약에 섞이지 않게)
-            List<CommentOption> commentOptions = commentOptionRepository.findAllByCommentIdInAndDeletedFalse(commentIds);
+            List<CommentOption> commentOptions = commentOptionRepository.findAllActiveByCommentIdIn(commentIds);
 
             // commentId -> contents 리스트로 묶기
             Map<Long, List<String>> map = new HashMap<>();
@@ -162,7 +162,7 @@ public class AiService {
         String summary = llmClient.summarizeText(prompt);
 
         // 10) AISummary upsert(update/insert)
-        Ai ai = aiRepository.findByAgendaIdAndDeletedFalse(agendaId).orElse(null);
+        Ai ai = aiRepository.findActiveAiByAgendaId(agendaId).orElse(null);
         if (ai == null) {
             ai = Ai.builder()
                     .agenda(agenda)
@@ -198,5 +198,18 @@ public class AiService {
         if (items == null) return List.of();
         int limit = Math.min(items.size(), 20);
         return items.subList(0, limit);
+    }
+
+    public AiDto.DetailAiResDto getAiSummary(Long agendaId, Long reqId) {
+        Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
+
+        User u = userRepository.findByIdAndDeletedFalse(reqId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        Ai ai = aiRepository.findActiveAiByAgendaId(a.getId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 AI요약입니다."));
+
+        return AiDto.DetailAiResDto.from(ai);
     }
 }

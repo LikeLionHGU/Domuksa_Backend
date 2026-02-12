@@ -46,7 +46,7 @@ public class VoteService {
         agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
 
-        Vote v = voteRepository.findByAgendaIdAndDeletedFalse(agendaId)
+        Vote v = voteRepository.findActiveByAgendaId(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
 
         return VoteDto.DetailVoteResDto.from(v);
