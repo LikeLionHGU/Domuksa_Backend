@@ -94,4 +94,12 @@ public class VoteController {
         Long reqId = principal.getUserId();
         return ResponseEntity.ok(voteSelectionService.updateVoteSelection(voteId, reqId, req));
     }
+
+    //해당 vote의 최다표를 받은 voteOption들 가져오기
+    @GetMapping("/{voteId}/result")
+    public ResponseEntity<List<VoteOptionDto.DetailVoteResultResDto>> getResult(@PathVariable Long voteId){
+        return ResponseEntity.ok(voteOptionService.getVoteResult(voteId));
+    }
+
+
 }
