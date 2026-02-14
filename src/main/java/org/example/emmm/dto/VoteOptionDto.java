@@ -69,6 +69,22 @@ public class VoteOptionDto {
         }
     }
 
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class DetailVoteResultResDto{
+        private Long voteOptionId;
+        private int selectCount;
+
+        public static DetailVoteResultResDto from(VoteOption vo){
+            return builder()
+                    .voteOptionId(vo.getId())
+                    .selectCount(vo.getSelectCount())
+                    .build();
+        }
+    }
+
 
     @Getter
     @AllArgsConstructor
@@ -92,12 +108,17 @@ public class VoteOptionDto {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class VoteSelectBlock {
         private Long voteOptionId;
         public static VoteSelectBlock from(VoteSelection vs) {
-            return new VoteSelectBlock(
-                    vs.getVoteOption().getId()
-            );
+            if (vs == null) {
+                return null;
+            }
+
+            return VoteSelectBlock.builder()
+                    .voteOptionId(vs.getVoteOption().getId())
+                    .build();
         }
 
     }

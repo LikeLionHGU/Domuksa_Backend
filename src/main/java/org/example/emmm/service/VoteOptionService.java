@@ -14,6 +14,7 @@ import org.example.emmm.repository.VoteSelectionRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -80,6 +81,32 @@ public class VoteOptionService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표옵션입니다."));
 
         vo.setDeleted(true);
+    }
+
+    public List<VoteOptionDto.DetailVoteResultResDto> getVoteResult(Long voteId) {
+        Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+
+        List<VoteOption> vos = voteOptionRepository.findAllActiveByVoteId(v.getId());
+
+        if (vos.isEmpty()) {
+            throw new IllegalArgumentException("투표옵션이 없습니다.");
+        }
+
+        for (VoteOption vo : vos) {
+            int count = voteSelectionRepository.countByVoteOptionIdAndDeletedFalse(vo.getId());
+            vo.setSelectCount(count);
+        }
+
+        int maxCount = vos.stream()
+                .mapToInt(VoteOption::getSelectCount)
+                .max()
+                .orElse(0);
+
+        return vos.stream()
+                .filter(vo -> vo.getSelectCount() == maxCount && maxCount > 0)
+                .map(VoteOptionDto.DetailVoteResultResDto::from)
+                .toList();
     }
 
 }
