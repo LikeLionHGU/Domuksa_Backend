@@ -25,7 +25,7 @@ public class VoteSelectionService {
 
     @Transactional
     public VoteSelectionDto.CreateSelectResDto createVoteSelection(Long voteId, Long userId, VoteSelectionDto.CreateSelectReqDto req) {
-        User u = userRepository.findById(userId)
+        User u = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
@@ -33,6 +33,11 @@ public class VoteSelectionService {
 
         VoteOption vo = voteOptionRepository.findByIdAndDeletedFalse(req.getVoteOptionId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표옵션입니다."));
+
+        voteSelectionRepository.findActiveVoteSelection(u.getId(), v.getId())
+                .ifPresent(existing -> {
+                    throw new IllegalStateException("이미 이 투표에 참여하셨습니다.");
+                });
 
         VoteSelection vs = VoteSelection.builder()
                 .createdAt(LocalDateTime.now())
@@ -45,7 +50,6 @@ public class VoteSelectionService {
         voteSelectionRepository.save(vs);
 
         return VoteSelectionDto.CreateSelectResDto.from(vs);
-
     }
 
     @Transactional
