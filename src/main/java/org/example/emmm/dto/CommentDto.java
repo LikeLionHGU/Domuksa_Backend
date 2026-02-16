@@ -3,6 +3,7 @@ package org.example.emmm.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.emmm.domain.AgendaConfig;
 import org.example.emmm.domain.Comment;
 
@@ -14,6 +15,7 @@ public class CommentDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class CreateCommentResDto{
         private CommentBlock commentBlock;
@@ -29,6 +31,7 @@ public class CommentDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class DetailCommentResDto{
         private Long commentId;
@@ -44,6 +47,7 @@ public class CommentDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class CommentBlock {
         private Long commentId;
         private Long agendaId;
@@ -60,6 +64,7 @@ public class CommentDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class ConfigBlock {
         private Long agendaId;
         private boolean voteEnabled;
@@ -70,10 +75,10 @@ public class CommentDto {
         public static CommentDto.ConfigBlock from(AgendaConfig config) {
             return new CommentDto.ConfigBlock(
                     config.getAgenda().getId(),
-                    config.isVoteEnabled(),
-                    config.isCommentEnabled(),
-                    config.isFileEnabled(),
-                    config.isAiSummaryEnabled()
+                    config.getVoteEnabled(),
+                    config.getCommentEnabled(),
+                    config.getFileEnabled(),
+                    config.getAiSummaryEnabled()
             );
         }
     }

@@ -56,7 +56,7 @@ public class VoteSelectionService {
         Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
 
-        VoteSelection vs = voteSelectionRepository.findByUserIdAndVoteIdAndDeletedFalse(u.getId(), v.getId())
+        VoteSelection vs = voteSelectionRepository.findActiveVoteSelection(u.getId(), v.getId())
                 .orElseThrow(() -> new IllegalArgumentException("수정할 투표 내역이 존재하지 않습니다."));
 
         VoteOption newOption = voteOptionRepository.findByIdAndDeletedFalse(req.getVoteOptionId())

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class AgendaConfig{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,10 +37,10 @@ public class AgendaConfig{
         this.deleted = false;
     }
 
-    private boolean voteEnabled;
-    private boolean commentEnabled;
-    private boolean fileEnabled;
-    private boolean aiSummaryEnabled;
+    private Boolean voteEnabled;
+    private Boolean commentEnabled;
+    private Boolean fileEnabled;
+    private Boolean aiSummaryEnabled;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, unique = true)

@@ -10,6 +10,7 @@ public class FileDto {
     @Getter
     @Setter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class CreateFileResDto{//post
         private Long fileId;
@@ -31,6 +32,7 @@ public class FileDto {
     @Getter
     @Setter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class FileListResDto{//get
         private Long id;

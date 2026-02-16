@@ -3,6 +3,7 @@ package org.example.emmm.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.emmm.domain.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public class CommentOptionDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class CreateCommentOptionResDto{
         private CommentOptionBlock commentOptionBlock;
@@ -28,6 +30,7 @@ public class CommentOptionDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class DetailCommentOptionResDto {
         private CommentDto.CommentBlock commentBlock;
@@ -50,6 +53,7 @@ public class CommentOptionDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class UpdateCommentOptionResDto{
         private CommentOptionBlock commentOptionBlock;
@@ -64,6 +68,7 @@ public class CommentOptionDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class CommentOptionBlock {
         private Long commentOptionId;
         private Long commentId;

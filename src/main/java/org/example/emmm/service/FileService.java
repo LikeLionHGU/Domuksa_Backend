@@ -73,8 +73,6 @@ public class FileService {
                 .stream()
                 .map(FileDto.FileListResDto::from)
                 .toList();
-
-
     }
 }
 

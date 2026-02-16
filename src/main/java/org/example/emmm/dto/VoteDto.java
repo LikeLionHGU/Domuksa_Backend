@@ -3,6 +3,7 @@ package org.example.emmm.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.emmm.domain.AgendaConfig;
 import org.example.emmm.domain.Vote;
 
@@ -14,6 +15,7 @@ public class VoteDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class CreateVoteResDto{
         private VoteDto.VoteBlock vote;
         private VoteDto.ConfigBlock config;
@@ -26,15 +28,16 @@ public class VoteDto {
     }
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class DetailVoteResDto{
-        private Long VoteId;
+        private Long voteId;
         private Long agendaId;
         private String title;
 
         public static VoteDto.DetailVoteResDto from(Vote vote) {
             return builder()
-                    .VoteId(vote.getId())
+                    .voteId(vote.getId())
                     .agendaId(vote.getAgenda().getId())
                     .title(vote.getTitle())
                     .build();
@@ -42,7 +45,34 @@ public class VoteDto {
     }
 
     @Getter
+    public static class UpdateVoteReqDto{
+        private String title;
+    }
+
+    @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class UpdateVoteResDto{
+        private Long voteId;
+        private Long agendaId;
+        private String title;
+
+        public static VoteDto.UpdateVoteResDto from(Vote v) {
+            return builder()
+                    .voteId(v.getId())
+                    .agendaId(v.getAgenda().getId())
+                    .title(v.getTitle())
+                    .build();
+        }
+    }
+
+
+
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class VoteBlock {
         private Long voteId;
         private Long agendaId;
@@ -59,6 +89,7 @@ public class VoteDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class ConfigBlock {
         private Long agendaId;
         private boolean voteEnabled;
@@ -69,10 +100,10 @@ public class VoteDto {
         public static VoteDto.ConfigBlock from(AgendaConfig config) {
             return new VoteDto.ConfigBlock(
                     config.getAgenda().getId(),
-                    config.isVoteEnabled(),
-                    config.isCommentEnabled(),
-                    config.isFileEnabled(),
-                    config.isAiSummaryEnabled()
+                    config.getVoteEnabled(),
+                    config.getCommentEnabled(),
+                    config.getFileEnabled(),
+                    config.getAiSummaryEnabled()
             );
         }
     }

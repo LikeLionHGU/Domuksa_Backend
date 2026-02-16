@@ -1,5 +1,6 @@
 package org.example.emmm.repository;
 
+import org.example.emmm.domain.Agenda;
 import org.example.emmm.domain.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,3 +11,4 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     Optional<Room> findByIdAndDeletedFalse(Long roomId);
 }
+

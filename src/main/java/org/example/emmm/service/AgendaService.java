@@ -55,7 +55,11 @@ public class AgendaService {
 
         AgendaConfig ac = a.getConfig();
 
-        return AgendaDto.DetailAgendaResDto.from(a, ac);
+        Room r = a.getRoom();
+        r.setCurrentAgendaSequence(a.getSequence());
+        int currentAgendaSequence = r.getCurrentAgendaSequence();
+
+        return AgendaDto.DetailAgendaResDto.from(a, ac,  currentAgendaSequence);
     }
 
     @Transactional
@@ -96,6 +100,8 @@ public class AgendaService {
 
         ac.setDeleted(true);
         a.setDeleted(true);
+
+        agendaRepository.saveAndFlush(a);
     }
 
 }

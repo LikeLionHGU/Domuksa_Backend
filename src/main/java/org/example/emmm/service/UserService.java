@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.emmm.domain.User;
 import org.example.emmm.domain.UserRoom;
 import org.example.emmm.dto.RoomDto;
-import org.example.emmm.repository.RoomRepository;
 import org.example.emmm.repository.UserRepository;
 import org.example.emmm.repository.UserRoomRepository;
 import org.example.emmm.security.GoogleIdTokenVerifierService;
@@ -68,7 +67,7 @@ public class UserService {
         User u =  userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<UserRoom> urs = userRoomRepository.findAllByUserId(u.getId());
+        List<UserRoom> urs = userRoomRepository.findAllActiveByUserId(u.getId());
 
         List<RoomDto.DetailRoomResDto> result = new ArrayList<>();
 
@@ -85,7 +84,7 @@ public class UserService {
         User u =  userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<UserRoom> urs = userRoomRepository.findAllByUserId(u.getId());
+        List<UserRoom> urs = userRoomRepository.findAllActiveByUserId(u.getId());
 
         List<RoomDto.DetailRoomResDto> result = new ArrayList<>();
 

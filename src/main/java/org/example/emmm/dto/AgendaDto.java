@@ -1,9 +1,6 @@
 package org.example.emmm.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.example.emmm.domain.Agenda;
 import org.example.emmm.domain.AgendaConfig;
 
@@ -18,6 +15,7 @@ public class AgendaDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class CreateAgendaResDto {
         private AgendaBlock agenda;
         private ConfigBlock config;
@@ -31,16 +29,31 @@ public class AgendaDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class DetailAgendaResDto {
         private AgendaBlock agenda;
         private ConfigBlock config;
+        private int currentAgendaSequence;
 
-        public static DetailAgendaResDto from(Agenda agenda, AgendaConfig config) {
+        public static DetailAgendaResDto from(Agenda agenda, AgendaConfig config, int currentAgendaSequence) {
             return new DetailAgendaResDto(
+                    AgendaBlock.from(agenda), ConfigBlock.from(config), currentAgendaSequence
+            );
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DetailListAgendaResDto {
+        private AgendaBlock agenda;
+        private ConfigBlock config;
+
+        public static DetailListAgendaResDto from(Agenda agenda, AgendaConfig config) {
+            return new DetailListAgendaResDto(
                     AgendaBlock.from(agenda), ConfigBlock.from(config)
             );
         }
-
     }
 
     @Getter
@@ -51,6 +64,7 @@ public class AgendaDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class UpdateAgendaResDto {
         private Long agendaId;
@@ -76,6 +90,7 @@ public class AgendaDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class UpdateConfigResDto {
         private Long agendaId;
@@ -89,16 +104,17 @@ public class AgendaDto {
             return UpdateConfigResDto.builder()
                     .agendaId(agenda.getId())
                     .modifiedAt(LocalDateTime.now())
-                    .voteEnabled(config.isVoteEnabled())
-                    .commentEnabled(config.isCommentEnabled())
-                    .fileEnabled(config.isFileEnabled())
-                    .aiSummaryEnabled(config.isAiSummaryEnabled())
+                    .voteEnabled(config.getVoteEnabled())
+                    .commentEnabled(config.getCommentEnabled())
+                    .fileEnabled(config.getFileEnabled())
+                    .aiSummaryEnabled(config.getAiSummaryEnabled())
                     .build();
         }
     }
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class AgendaBlock {
         private Long agendaId;
         private Long roomId;
@@ -117,6 +133,7 @@ public class AgendaDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class ConfigBlock {
         private Long agendaId;
         private boolean voteEnabled;
@@ -127,10 +144,10 @@ public class AgendaDto {
         public static ConfigBlock from(AgendaConfig config) {
             return new ConfigBlock(
                     config.getAgenda().getId(),
-                    config.isVoteEnabled(),
-                    config.isCommentEnabled(),
-                    config.isFileEnabled(),
-                    config.isAiSummaryEnabled()
+                    config.getVoteEnabled(),
+                    config.getCommentEnabled(),
+                    config.getFileEnabled(),
+                    config.getAiSummaryEnabled()
             );
         }
     }

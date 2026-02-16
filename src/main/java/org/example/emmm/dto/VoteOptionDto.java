@@ -3,6 +3,7 @@ package org.example.emmm.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.emmm.domain.AgendaConfig;
 import org.example.emmm.domain.Vote;
 import org.example.emmm.domain.VoteOption;
@@ -18,6 +19,7 @@ public class VoteOptionDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class CreateOptionResDto {
         private VoteOptionDto.VoteOptionBlock voteOption;
 
@@ -30,6 +32,7 @@ public class VoteOptionDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class DetailOptionResDto {
         private VoteDto.VoteBlock vote;
         private List<VoteOptionBlock> voteOptions;
@@ -54,6 +57,7 @@ public class VoteOptionDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class UpdateOptionResDto{
         private VoteOptionBlock voteOption;
@@ -65,9 +69,26 @@ public class VoteOptionDto {
         }
     }
 
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class DetailVoteResultResDto{
+        private Long voteOptionId;
+        private int selectCount;
+
+        public static DetailVoteResultResDto from(VoteOption vo){
+            return builder()
+                    .voteOptionId(vo.getId())
+                    .selectCount(vo.getSelectCount())
+                    .build();
+        }
+    }
+
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class VoteOptionBlock {
         private Long voteOptionId;
         private Long voteId;
@@ -86,12 +107,18 @@ public class VoteOptionDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class VoteSelectBlock {
         private Long voteOptionId;
         public static VoteSelectBlock from(VoteSelection vs) {
-            return new VoteSelectBlock(
-                    vs.getVoteOption().getId()
-            );
+            if (vs == null) {
+                return null;
+            }
+
+            return VoteSelectBlock.builder()
+                    .voteOptionId(vs.getVoteOption().getId())
+                    .build();
         }
 
     }

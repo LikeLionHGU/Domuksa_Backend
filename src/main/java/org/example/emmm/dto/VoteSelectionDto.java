@@ -12,6 +12,7 @@ public class VoteSelectionDto {
     @Getter
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class CreateSelectResDto{
         private Long voteSelectionId;
         private Long voteId;
@@ -36,6 +37,7 @@ public class VoteSelectionDto {
     @Getter
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class UpdateSelectResDto{
         private Long voteSelectionId;
         private Long voteId;
