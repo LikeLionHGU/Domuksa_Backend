@@ -67,6 +67,43 @@ public class VoteDto {
         }
     }
 
+    @Getter
+    public static class UpdateStatusReqDto{
+        private String status;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class UpdateStatusResDto{
+        private Long voteId;
+        private String status;
+
+        public static VoteDto.UpdateStatusResDto from(Vote v) {
+            return builder()
+                    .voteId(v.getId())
+                    .status(v.getVoteStatus())
+                    .build();
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class DetailStatusResDto{
+        private Long voteId;
+        private String status;
+
+        public static VoteDto.DetailStatusResDto from(Vote v) {
+            return builder()
+                    .voteId(v.getId())
+                    .status(v.getVoteStatus())
+                    .build();
+        }
+    }
+
 
 
 

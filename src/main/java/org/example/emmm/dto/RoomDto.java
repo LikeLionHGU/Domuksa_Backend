@@ -72,6 +72,15 @@ public class RoomDto {
     }
 
     @Getter
+    @Builder
+    public static class RoomMemberResDto {
+        private Long userId;
+        private String name;
+        private String role; // HOST, MEMBER
+        private boolean isOnline;
+    }
+
+    @Getter
     public static class CodeReqDto {
         private String code;
     }

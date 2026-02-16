@@ -140,7 +140,7 @@ public class TimerService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED");
         }
 
-        UserRoom ur = userRoomRepository.findActiveUserRoom(u, r)
+        UserRoom ur = userRoomRepository.findActiveUserRoom(u.getId(), r.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "NOT_MEMBER"));
 
 
@@ -158,7 +158,7 @@ public class TimerService {
         Room r = roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ROOM_NOT_FOUND"));
 
-        userRoomRepository.findActiveUserRoom(u, r)
+        userRoomRepository.findActiveUserRoom(u.getId(), r.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "NOT_MEMBER"));
     }
 
