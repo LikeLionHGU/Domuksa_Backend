@@ -51,7 +51,7 @@ public class AiService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         // 2) 권한/참여자 검증 (최소: 해당 Room 참여자인지)
-        UserRoom ur = userRoomRepository.findActiveUserRoom(u, agenda.getRoom())
+        UserRoom ur = userRoomRepository.findActiveUserRoom(u.getId(), agenda.getRoom().getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 방 참여자가 아닙니다."));
 
         // 필요하면 호스트만 요약 생성 허용

@@ -26,7 +26,7 @@ public class CommentService {
         User u = userRepository.findByIdAndDeletedFalse(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        UserRoom ur = userRoomRepository.findActiveUserRoom(u, a.getRoom())
+        UserRoom ur = userRoomRepository.findActiveUserRoom(u.getId(), a.getRoom().getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저룸입니다."));
 
         if(!ur.getRole().equals("host")){

@@ -101,5 +101,18 @@ public class VoteController {
         return ResponseEntity.ok(voteOptionService.getVoteResult(voteId));
     }
 
+    //voteStatus를 running과 confirm으로 바꾸기
+    @PatchMapping("/{voteId}/voteStatus")
+    public ResponseEntity<VoteDto.UpdateStatusResDto> updateStatus(@PathVariable Long voteId,
+                                                                   @RequestBody VoteDto.UpdateStatusReqDto req) {
+        return ResponseEntity.ok(voteService.updateVoteStatus(voteId, req));
+    }
+
+    //voteStatus를 가져오기
+    @GetMapping("/{voteId}/voteStatus")
+    public ResponseEntity<VoteDto.DetailStatusResDto> updateStatus(@PathVariable Long voteId) {
+
+        return ResponseEntity.ok(voteService.getVoteStatus(voteId));
+    }
 
 }

@@ -64,7 +64,7 @@ public class UserService {
     }
 
     public List<RoomDto.DetailRoomResDto> getRunningRooms(Long userId) {
-        User u =  userRepository.findById(userId)
+        User u =  userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<UserRoom> urs = userRoomRepository.findAllActiveByUserId(u.getId());

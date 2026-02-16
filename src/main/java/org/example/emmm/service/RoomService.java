@@ -1,6 +1,5 @@
 package org.example.emmm.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.domain.*;
 import org.example.emmm.dto.AgendaDto;
@@ -13,11 +12,13 @@ import org.example.emmm.util.RoomCodeGenerator;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,8 @@ public class RoomService {
     private final UserRoomRepository userRoomRepository;
     private final AgendaRepository agendaRepository;
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final PresenceService presenceService;
 
     @Transactional
     public RoomDto.CreateRoomResDto create(RoomDto.CreateRoomReqDto req, Long hostUserId) {
@@ -80,9 +83,11 @@ public class RoomService {
         Room r = roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
-        boolean isAlreadyJoined = userRoomRepository.existsByRoomAndUser(r, u);
-        if (isAlreadyJoined) {
-            throw new IllegalStateException("이미 참여 중인 방입니다.");
+        Optional<UserRoom> existingUserRoom = userRoomRepository.findActiveUserRoom(u.getId(), r.getId());
+
+        if (existingUserRoom.isPresent()) {
+            UserRoom ur = existingUserRoom.get();
+            return new RoomDto.ParticipatePasswordCreateResDto(r.getId(), ur.getId(), ur.getRole());
         }
 
         if (r.getPassword() != null && r.getPassword().equals(req.getPassword())) {
@@ -91,6 +96,7 @@ public class RoomService {
                     .user(u)
                     .role("member")
                     .state("active")
+                    .deleted(false)
                     .build();
 
             userRoomRepository.save(ur);
@@ -143,7 +149,7 @@ public class RoomService {
         User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        UserRoom userRoom = userRoomRepository.findActiveUserRoom(user, room)
+        UserRoom userRoom = userRoomRepository.findActiveUserRoom(user.getId(), room.getId())
                 .orElseThrow(() -> new IllegalArgumentException("이 방에 참여하지 않은 유저입니다."));
 
         return RoomDto.DetailRoomResDto.from(room, userRoom);
@@ -157,7 +163,7 @@ public class RoomService {
         Room r = roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
-        UserRoom ur = userRoomRepository.findActiveUserRoom(u, r)
+        UserRoom ur = userRoomRepository.findActiveUserRoom(u.getId(), r.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저룸입니다."));
 
         if (!"host".equals(ur.getRole())) {
@@ -183,7 +189,7 @@ public class RoomService {
         User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        UserRoom userRoom = userRoomRepository.findActiveUserRoom(user, room)
+        UserRoom userRoom = userRoomRepository.findActiveUserRoom(user.getId(), room.getId())
                 .orElseThrow(() -> new IllegalArgumentException("이 방에 참여하지 않은 유저입니다."));
 
         if ("host".equals(userRoom.getRole())) {
@@ -224,7 +230,7 @@ public class RoomService {
         User u = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        UserRoom ur = userRoomRepository.findActiveUserRoom(u, r)
+        UserRoom ur = userRoomRepository.findActiveUserRoom(u.getId(), r.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         if (!"host".equals(ur.getRole())) {
@@ -245,6 +251,20 @@ public class RoomService {
         );
 
         return r.getState();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RoomDto.RoomMemberResDto> getRoomMembers(Long roomId) {
+        List<UserRoom> members = userRoomRepository.findAllActiveMembersByRoomId(roomId);
+
+        return members.stream()
+                .map(ur -> RoomDto.RoomMemberResDto.builder()
+                        .userId(ur.getUser().getId())
+                        .name(ur.getUser().getName())
+                        .role(ur.getRole())
+                        .isOnline(presenceService.isUserOnline(roomId, ur.getUser().getId()))
+                        .build())
+                .toList();
     }
 
 }

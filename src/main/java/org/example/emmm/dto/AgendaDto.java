@@ -10,7 +10,6 @@ public class AgendaDto {
     @Getter
     public static class CreateAgendaReqDto {
         private String name;
-        private int sequence;
     }
 
     @Getter
