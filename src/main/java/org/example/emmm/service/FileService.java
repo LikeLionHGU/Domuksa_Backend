@@ -42,9 +42,12 @@ public class FileService {
             throw new IllegalArgumentException("파일 이름이 없습니다");
         }
         String fileExtension = "";//.png같은거
+        boolean isPdf = false;
         if(originalFileName.contains(".")){
             fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            isPdf = fileExtension.equalsIgnoreCase(".pdf");
         }
+
         String uuidFileName = dirName + UUID.randomUUID() + fileExtension;//이름 랜덤,dirName은 S3 버킷 안의 “폴더 경로”
 
         ObjectMetadata metadata = new ObjectMetadata();//S3에 저장될 부가 정보(헤더)
@@ -63,6 +66,7 @@ public class FileService {
                 .fileName(originalFileName)
                 .fileUrl(s3Url)
                 .s3Key(uuidFileName)
+                .isPdf(isPdf)
                 .build();
 
         File saved = fileRepository.save(f);
