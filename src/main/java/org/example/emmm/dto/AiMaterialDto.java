@@ -23,8 +23,7 @@ public class AiMaterialDto {
 
     @Getter @AllArgsConstructor
     public static class CommentItem {
-        private String title; // Comment.title (안건 토론 주제 같은 느낌이면)
-        private List<String> contents; // CommentOption.contents 전부
+        private String content;
     }
 
     @Getter @AllArgsConstructor

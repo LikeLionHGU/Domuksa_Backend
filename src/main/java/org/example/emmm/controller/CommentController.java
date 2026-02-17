@@ -2,12 +2,8 @@ package org.example.emmm.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.dto.CommentDto;
-import org.example.emmm.dto.CommentOptionDto;
-import org.example.emmm.security.UserPrincipal;
-import org.example.emmm.service.CommentOptionService;
 import org.example.emmm.service.CommentService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,44 +13,28 @@ import java.util.List;
 @RequestMapping("/comment")
 public class CommentController {
     private final CommentService commentService;
-    private final CommentOptionService commentOptionService;
 
-    //commentTemplate 생성
+    //comment 추가
     @PostMapping("/{agendaId}")
-    public ResponseEntity<CommentDto.CreateCommentResDto> createCommentTemplate(@PathVariable Long agendaId,
-                                                                                @RequestBody CommentDto.CreateCommentReqDto req,
-                                                                                @AuthenticationPrincipal UserPrincipal principal) {
-        Long reqId = principal.getUserId();
-        return ResponseEntity.ok(commentService.createCommentTemplate(agendaId, reqId, req));
+    public ResponseEntity<CommentDto.CreateCommentResDto> createCommentOption(@PathVariable Long agendaId,
+                                                                                    @RequestBody CommentDto.CreateCommentReqDto req) {
+        return ResponseEntity.ok(commentService.createComment(agendaId, req));
     }
 
-    //commentTemplate정보 가져오기
+    //해당 안건에 대한 comment들 전부 가져오기
     @GetMapping("/{agendaId}")
-    public ResponseEntity<CommentDto.DetailCommentResDto> getComment(@PathVariable Long agendaId) {
-        return ResponseEntity.ok(commentService.getCommentTemplate(agendaId));
+    public ResponseEntity<List<CommentDto.DetailCommentResDto>> getCommentOption(@PathVariable Long agendaId) {
+        return ResponseEntity.ok(commentService.getComment(agendaId));
     }
 
-    //commentOption 생성
-    @PostMapping("/{commentId}/option")
-    public ResponseEntity<CommentOptionDto.CreateCommentOptionResDto> createCommentOption(@PathVariable Long commentId,
-                                                                                          @RequestBody CommentOptionDto.CreateCommentOptionReqDto req) {
-        return ResponseEntity.ok(commentOptionService.createCommentOption(commentId, req));
+    @PatchMapping("/{commentId}")
+    public ResponseEntity<CommentDto.UpdateCommentResDto> updateCommentOption(@PathVariable Long commentId,
+                                                                                    @RequestBody CommentDto.UpdateCommentReqDto req) {
+        return ResponseEntity.ok(commentService.updateComment(commentId, req));
     }
 
-    //해당 안건에 대한 commentOption 전부 가져오기
-    @GetMapping("/{commentId}/option")
-    public ResponseEntity<CommentOptionDto.DetailCommentOptionResDto> getCommentOption(@PathVariable Long commentId) {
-        return ResponseEntity.ok(commentOptionService.getCommentOption(commentId));
-    }
-
-    @PatchMapping("/{commentOptionId}")
-    public ResponseEntity<CommentOptionDto.UpdateCommentOptionResDto> updateCommentOption(@PathVariable Long commentOptionId,
-                                                                                          @RequestBody CommentOptionDto.UpdateCommentOptionReqDto req) {
-        return ResponseEntity.ok(commentOptionService.updateCommentOption(commentOptionId, req));
-    }
-
-    @DeleteMapping("/{commentOptionId}")
-    public void deleteCommentOption(@PathVariable Long commentOptionId) {
-        commentOptionService.deleteCommentOption(commentOptionId);
+    @DeleteMapping("/{commentId}")
+    public void deleteCommentOption(@PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
     }
 }

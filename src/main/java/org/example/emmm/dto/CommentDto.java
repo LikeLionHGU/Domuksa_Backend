@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.emmm.domain.AgendaConfig;
-import org.example.emmm.domain.Comment;
+import org.example.emmm.domain.*;
+
 
 public class CommentDto {
     @Getter
     public static class CreateCommentReqDto{
-        private String title;
+        private String content;
     }
 
     @Getter
@@ -18,29 +18,13 @@ public class CommentDto {
     @NoArgsConstructor
     @Builder
     public static class CreateCommentResDto{
-        private CommentBlock commentBlock;
-        private ConfigBlock configBlock;
-
-        public static CreateCommentResDto from(Comment comment, AgendaConfig agendaConfig){
-            return new CreateCommentResDto(
-                    CommentBlock.from(comment),
-                    ConfigBlock.from(agendaConfig)
-            );
-        }
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Builder
-    public static class DetailCommentResDto{
         private Long commentId;
-        private String title;
+        private String content;
 
-        public static DetailCommentResDto from(Comment comment){
+        public static CreateCommentResDto from(Comment c){
             return builder()
-                    .commentId(comment.getId())
-                    .title(comment.getTitle())
+                    .commentId(c.getId())
+                    .content(c.getContent())
                     .build();
         }
     }
@@ -48,38 +32,38 @@ public class CommentDto {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class CommentBlock {
+    @Builder
+    public static class DetailCommentResDto {
         private Long commentId;
-        private Long agendaId;
-        private String title;
+        private String content;
 
-        public static CommentBlock from(Comment comment) {
-            return new CommentBlock(
-                    comment.getId(),
-                    comment.getAgenda().getId(),
-                    comment.getTitle()
-            );
+        public static DetailCommentResDto from(Comment c){
+            return builder()
+                    .commentId(c.getId())
+                    .content(c.getContent())
+                    .build();
         }
+    }
+
+    @Getter
+    public static class UpdateCommentReqDto{
+        private String content;
     }
 
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class ConfigBlock {
-        private Long agendaId;
-        private boolean voteEnabled;
-        private boolean commentEnabled;
-        private boolean fileEnabled;
-        private boolean aiSummaryEnabled;
+    @Builder
+    public static class UpdateCommentResDto{
+        private Long commentId;
+        private String content;
 
-        public static CommentDto.ConfigBlock from(AgendaConfig config) {
-            return new CommentDto.ConfigBlock(
-                    config.getAgenda().getId(),
-                    config.getVoteEnabled(),
-                    config.getCommentEnabled(),
-                    config.getFileEnabled(),
-                    config.getAiSummaryEnabled()
-            );
+        public static UpdateCommentResDto from(Comment c){
+            return builder()
+                    .commentId(c.getId())
+                    .content(c.getContent())
+                    .build();
         }
     }
+
 }
