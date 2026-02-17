@@ -24,4 +24,15 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "AND c.deleted = false " +
             "AND c.agenda.deleted = false")
     Optional<Comment> findActiveByAgenda(@Param("agenda") Agenda agenda);
+
+
+    @Query("SELECT c FROM Comment c " +
+            "WHERE c.id IN :commentIds " +
+            "AND c.deleted = false")
+    List<Comment> findAllActiveByCommentIdIn(@Param("commentIds") List<Long> commentIds);
+
+    @Query("SELECT c FROM Comment c " +
+            "WHERE c.id = :commentId " +
+            "AND c.deleted = false")
+    List<Comment> findAllActiveByCommentId(@Param("commentId") Long commentId);
 }

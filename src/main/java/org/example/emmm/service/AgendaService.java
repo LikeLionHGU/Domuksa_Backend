@@ -23,6 +23,9 @@ public class AgendaService {
         Room r = roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
 
+        Integer maxSeq = agendaRepository.findMaxSequenceByRoomId(roomId);
+        int nextSeq = (maxSeq == null) ? 1 : maxSeq + 1;
+
         AgendaConfig ac = AgendaConfig.builder()
                 .deleted(false)
                 .createdAt(LocalDateTime.now())
@@ -36,7 +39,7 @@ public class AgendaService {
                 .deleted(false)
                 .createdAt(LocalDateTime.now())
                 .name(req.getName())
-                .sequence(req.getSequence())
+                .sequence(nextSeq)
                 .room(r)
                 .config(ac)
                 .build();
@@ -96,12 +99,20 @@ public class AgendaService {
         Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
 
-        AgendaConfig ac = a.getConfig();
+        int deletedSequence = a.getSequence();
+        Long roomId = a.getRoom().getId();
 
-        ac.setDeleted(true);
+        AgendaConfig ac = a.getConfig();
+        if (ac != null) {
+            ac.setDeleted(true);
+        }
         a.setDeleted(true);
+
+        agendaRepository.decreaseSequenceAbove(roomId, deletedSequence);
 
         agendaRepository.saveAndFlush(a);
     }
+
+
 
 }

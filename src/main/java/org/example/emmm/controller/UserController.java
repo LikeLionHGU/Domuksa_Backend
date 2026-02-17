@@ -67,6 +67,7 @@ public class UserController {
     public ResponseEntity<List<RoomDto.DetailRoomResDto>> getRunningRoom(
             @AuthenticationPrincipal UserPrincipal principal
     ) {
+        if (principal == null) return ResponseEntity.status(401).build();
         Long reqId = principal.getUserId();
         return ResponseEntity.ok(userService.getRunningRooms(reqId));
     }
@@ -75,6 +76,7 @@ public class UserController {
     public ResponseEntity<List<RoomDto.DetailRoomResDto>> getCompleteRoom(
             @AuthenticationPrincipal UserPrincipal principal
     ) {
+        if (principal == null) return ResponseEntity.status(401).build();
         Long reqId = principal.getUserId();
         return ResponseEntity.ok(userService.getCompleteRooms(reqId));
     }

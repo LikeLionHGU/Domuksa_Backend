@@ -36,7 +36,7 @@ public class Comment {
         this.deleted = false;
     }
 
-    private String title;
+    private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Agenda agenda;
