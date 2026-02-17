@@ -17,6 +17,7 @@ public class FileDto {
         private Long agendaId;
         private String fileName;
         private String fileUrl;
+        private Boolean isPdf;
         private String s3Key;
 
         public static FileDto.CreateFileResDto from(File file){
@@ -26,6 +27,7 @@ public class FileDto {
                     .fileName(file.getFileName())
                     .fileUrl(file.getFileUrl())
                     .s3Key(file.getS3Key())
+                    .isPdf(file.getIsPdf())
                     .build();
         }
     }
@@ -38,11 +40,14 @@ public class FileDto {
         private Long id;
         private String fileName;
         private String fileUrl;
+        private Boolean isPdf;
+
         public static FileDto.FileListResDto from(File file){
             return builder()
                     .id(file.getId())
                     .fileName(file.getFileName())
                     .fileUrl(file.getFileUrl())
+                    .isPdf(file.getIsPdf())
                     .build();
 
         }

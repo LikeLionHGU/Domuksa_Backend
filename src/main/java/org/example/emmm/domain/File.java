@@ -38,6 +38,8 @@ public class File {
         this.deleted = false;
     }
 
+
+    private Boolean isPdf;
     private String fileName;
     private String fileUrl;
     private String s3Key;
