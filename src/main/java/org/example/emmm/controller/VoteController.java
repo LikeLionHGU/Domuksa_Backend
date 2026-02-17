@@ -95,6 +95,14 @@ public class VoteController {
         return ResponseEntity.ok(voteSelectionService.updateVoteSelection(voteId, reqId, req));
     }
 
+    //voteSelection의 내 투표 내용 삭제하기
+    @DeleteMapping("/{voteId}/voteSelect")
+    public void deleteVoteOption(@PathVariable Long voteId,
+                                 @AuthenticationPrincipal UserPrincipal principal) {
+        Long reqId = principal.getUserId();
+        voteSelectionService.deleteVoteSelection(voteId, reqId);
+    }
+
     //해당 vote의 최다표를 받은 voteOption들 가져오기
     @GetMapping("/{voteId}/result")
     public ResponseEntity<List<VoteOptionDto.DetailVoteResultResDto>> getResult(@PathVariable Long voteId){
@@ -110,7 +118,7 @@ public class VoteController {
 
     //voteStatus를 가져오기
     @GetMapping("/{voteId}/voteStatus")
-    public ResponseEntity<VoteDto.DetailStatusResDto> updateStatus(@PathVariable Long voteId) {
+    public ResponseEntity<VoteDto.DetailStatusResDto> getStatus(@PathVariable Long voteId) {
 
         return ResponseEntity.ok(voteService.getVoteStatus(voteId));
     }
