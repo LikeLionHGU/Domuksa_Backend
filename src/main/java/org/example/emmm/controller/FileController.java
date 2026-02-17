@@ -31,4 +31,10 @@ public class FileController {
         List<FileDto.FileListResDto> files = fileService.getFile(agendaId);
         return ResponseEntity.ok(files);
     }
+    @DeleteMapping("/{fileId}")
+    public ResponseEntity<String> deleteFile(@PathVariable Long fileId) {
+        fileService.deletedFile(fileId);
+        return ResponseEntity.ok("파일이 성공적으로 삭제되었습니다.");
+}
+
 }

@@ -90,6 +90,19 @@ public class FileService {
                 .map(FileDto.FileListResDto::from)
                 .toList();
     }
+
+    public void deletedFile (Long fileId){
+        File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 파일이 존재하지 않습니다. id=" + fileId));
+
+        try {
+            amazonS3Client.deleteObject(bucket,file.getS3Key());
+        } catch (Exception e) {
+            throw new RuntimeException("S3 파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        fileRepository.delete(file);
+    }
+
 }
 
 
