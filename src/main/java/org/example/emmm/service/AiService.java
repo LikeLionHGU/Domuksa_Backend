@@ -11,9 +11,7 @@ import org.example.emmm.util.LlmClient;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +26,6 @@ public class AiService {
     private final VoteSelectionRepository voteSelectionRepository;
 
     private final CommentRepository commentRepository;
-    private final CommentOptionRepository commentOptionRepository;
 
     private final FileRepository fileRepository;
 
@@ -51,7 +48,7 @@ public class AiService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         // 2) 권한/참여자 검증 (최소: 해당 Room 참여자인지)
-        UserRoom ur = userRoomRepository.findActiveUserRoom(u, agenda.getRoom())
+        UserRoom ur = userRoomRepository.findActiveUserRoom(u.getId(), agenda.getRoom().getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 방 참여자가 아닙니다."));
 
         // 필요하면 호스트만 요약 생성 허용
@@ -63,10 +60,8 @@ public class AiService {
         AgendaConfig ac = agenda.getConfig();
         if (ac != null && (ac.getAiSummaryEnabled() == null || !ac.getAiSummaryEnabled())) {
             ac.setAiSummaryEnabled(true);
-            // CommentService/VoteService 패턴과 동일하게 명시 save
             agendaConfigRepository.save(ac);
         }
-
 
         // 3) Vote + VoteOption(selectCount)
         AiMaterialDto.VoteItem voteItem = null;
@@ -74,7 +69,6 @@ public class AiService {
 
         if (vote != null) {
             List<VoteOption> options = voteOptionRepository.findAllActiveByVoteId(vote.getId());
-            // ✅ DB의 selectCount가 항상 최신이라는 보장이 없어서, 요약에서는 "실제 선택 수"를 즉시 계산
             List<AiMaterialDto.VoteOptionItem> optionItems = options.stream()
                     .map(o -> {
                         int count = voteSelectionRepository.countByVoteOptionIdAndDeletedFalse(o.getId());
@@ -89,29 +83,15 @@ public class AiService {
             );
         }
 
-        // 4) Comments + CommentOption(contents 전부)
+        // 4) Comments 처리 ✅ (단순화됨)
         List<Comment> comments = commentRepository.findAllActiveByAgendaId(agendaId);
         List<AiMaterialDto.CommentItem> commentItems;
 
         if (comments.isEmpty()) {
             commentItems = List.of();
         } else {
-            List<Long> commentIds = comments.stream().map(Comment::getId).toList();
-            // ✅ deleted=false 필터 버전 사용 (삭제된 옵션이 요약에 섞이지 않게)
-            List<CommentOption> commentOptions = commentOptionRepository.findAllActiveByCommentIdIn(commentIds);
-
-            // commentId -> contents 리스트로 묶기
-            Map<Long, List<String>> map = new HashMap<>();
-            for (CommentOption co : commentOptions) {
-                map.computeIfAbsent(co.getComment().getId(), k -> new ArrayList<>())
-                        .add(co.getContent());
-            }
-
             commentItems = comments.stream()
-                    .map(c -> new AiMaterialDto.CommentItem(
-                            c.getTitle(),
-                            map.getOrDefault(c.getId(), List.of())
-                    ))
+                    .map(c -> new AiMaterialDto.CommentItem(c.getContent()))
                     .toList();
         }
 
@@ -127,11 +107,8 @@ public class AiService {
             String url = f.getFileUrl();
             if (url == null) continue;
 
-            // 아주 단순한 판별: 확장자 기반 (너희 저장 규칙에 맞춰 고도화 가능)
             if (url.toLowerCase().endsWith(".pdf")) {
                 try {
-                    // ✅ URL이 아니라 File.s3Key로 다운받는게 제일 안전함
-                    // (S3 url 포맷이 바뀌거나, 서명 URL을 쓰는 경우에도 s3Key면 안정적)
                     if (f.getS3Key() == null || f.getS3Key().isBlank()) {
                         continue;
                     }
@@ -150,7 +127,7 @@ public class AiService {
                 agenda.getName(),
                 agenda.getSequence(),
                 voteItem,
-                limitCommentsForPrompt(commentItems), // 길이 안전장치
+                limitCommentsForPrompt(commentItems), // ✅ 변경된 헬퍼 메서드 사용
                 limitFilesForPrompt(fileItems),
                 extractedTexts
         );
@@ -181,17 +158,17 @@ public class AiService {
         return s.length() <= max ? s : s.substring(0, max) + "...";
     }
 
-    // 댓글 “전부”는 수집하되, prompt에는 안전하게 컷 (실패 방지)
+    // ✅ 수정됨: 단일 내용(content)에 대해서만 길이 제한 수행
     private static List<AiMaterialDto.CommentItem> limitCommentsForPrompt(List<AiMaterialDto.CommentItem> items) {
         if (items == null) return List.of();
         int limit = Math.min(items.size(), 30); // comment 단위 상한
         List<AiMaterialDto.CommentItem> sliced = items.subList(items.size() - limit, items.size());
 
-        // 각 comment의 contents도 너무 길면 컷
-        return sliced.stream().map(ci -> new AiMaterialDto.CommentItem(
-                ci.getTitle(),
-                ci.getContents().stream().map(c -> limitChars(c, 400)).toList()
-        )).toList();
+        return sliced.stream()
+                .map(ci -> new AiMaterialDto.CommentItem(
+                        limitChars(ci.getContent(), 400) // 내용 길이를 400자로 컷
+                ))
+                .toList();
     }
 
     private static List<AiMaterialDto.FileItem> limitFilesForPrompt(List<AiMaterialDto.FileItem> items) {

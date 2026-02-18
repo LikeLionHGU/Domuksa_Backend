@@ -75,11 +75,13 @@ public class VoteOptionDto {
     @Builder
     public static class DetailVoteResultResDto{
         private Long voteOptionId;
+        private String voteStatus;
         private int selectCount;
 
         public static DetailVoteResultResDto from(VoteOption vo){
             return builder()
                     .voteOptionId(vo.getId())
+                    .voteStatus(vo.getVote().getVoteStatus())
                     .selectCount(vo.getSelectCount())
                     .build();
         }

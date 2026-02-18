@@ -54,7 +54,7 @@ public class VoteSelectionService {
 
     @Transactional
     public VoteSelectionDto.UpdateSelectResDto updateVoteSelection(Long voteId, Long userId, VoteSelectionDto.UpdateSelectReqDto req) {
-        User u = userRepository.findById(userId)
+        User u = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
@@ -70,5 +70,19 @@ public class VoteSelectionService {
         vs.setModifiedAt(LocalDateTime.now());
 
         return VoteSelectionDto.UpdateSelectResDto.from(vs);
+    }
+
+    @Transactional
+    public void deleteVoteSelection(Long voteId, Long userId) {
+        User u = userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+
+        VoteSelection vs = voteSelectionRepository.findActiveVoteSelection(u.getId(), v.getId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표선택입니다."));
+
+        vs.setDeleted(true);
     }
 }

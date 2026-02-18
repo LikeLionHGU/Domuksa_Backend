@@ -12,11 +12,11 @@ import java.util.Optional;
 
 public interface UserRoomRepository extends JpaRepository<UserRoom,Long> {
     @Query("SELECT ur FROM UserRoom ur " +
-            "WHERE ur.user = :user AND ur.room = :room " +
+            "WHERE ur.user.id = :userId AND ur.room.id = :roomId " + // ID값으로 직접 비교
             "AND ur.deleted = false " +
             "AND ur.user.deleted = false " +
             "AND ur.room.deleted = false")
-    Optional<UserRoom> findActiveUserRoom(@Param("user") User user, @Param("room") Room room);
+    Optional<UserRoom> findActiveUserRoom(@Param("userId") Long userId, @Param("roomId") Long roomId);
 
     @Query("SELECT ur FROM UserRoom ur " +
             "JOIN FETCH ur.user u " +
@@ -31,6 +31,15 @@ public interface UserRoomRepository extends JpaRepository<UserRoom,Long> {
             "JOIN FETCH ur.room r " +
             "WHERE ur.user.id = :userId " +
             "AND ur.deleted = false " +
-            "AND ur.user.deleted = false")
+            "AND ur.user.deleted = false " +
+            "AND r.deleted = false")
     List<UserRoom> findAllActiveByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT ur FROM UserRoom ur " +
+            "JOIN FETCH ur.user u " +
+            "WHERE ur.room.id = :roomId " +
+            "AND ur.deleted = false " +
+            "AND u.deleted = false " +
+            "AND ur.room.deleted = false")
+    List<UserRoom> findAllActiveMembersByRoomId(@Param("roomId") Long roomId);
 }

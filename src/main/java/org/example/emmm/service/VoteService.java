@@ -18,6 +18,8 @@ public class VoteService {
     private final AgendaConfigRepository agendaConfigRepository;
     private final VoteOptionRepository voteOptionRepository;
     private final VoteSelectionRepository voteSelectionRepository;
+    private final UserRepository userRepository;
+    private final UserRoomRepository userRoomRepository;
 
     @Transactional
     public VoteDto.CreateVoteResDto createVoteTemplate(Long agendaId,VoteDto.CreateVoteReqDto req){
@@ -84,4 +86,22 @@ public class VoteService {
 
         return "삭제되었습니다";
     }
+
+    @Transactional
+    public VoteDto.UpdateStatusResDto updateVoteStatus(Long voteId, VoteDto.UpdateStatusReqDto req) {
+        Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+
+        v.setVoteStatus(req.getStatus());
+
+        return  VoteDto.UpdateStatusResDto.from(v);
+    }
+
+    public VoteDto.DetailStatusResDto getVoteStatus(Long voteId) {
+        Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
+
+        return  VoteDto.DetailStatusResDto.from(v);
+    }
+
 }

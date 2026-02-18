@@ -42,6 +42,7 @@ public class VoteOptionService {
 
         return VoteOptionDto.CreateOptionResDto.from(vo);
     }
+
     @Transactional
     public VoteOptionDto.DetailOptionResDto getVoteOption(Long voteId, Long userId) {
         User u = userRepository.findByIdAndDeletedFalse(userId)
@@ -83,6 +84,7 @@ public class VoteOptionService {
         vo.setDeleted(true);
     }
 
+    @Transactional
     public List<VoteOptionDto.DetailVoteResultResDto> getVoteResult(Long voteId) {
         Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));

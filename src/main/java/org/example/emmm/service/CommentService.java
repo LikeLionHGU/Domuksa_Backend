@@ -1,13 +1,18 @@
 package org.example.emmm.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.emmm.domain.*;
+import org.example.emmm.domain.Agenda;
+import org.example.emmm.domain.AgendaConfig;
+import org.example.emmm.domain.Comment;
 import org.example.emmm.dto.CommentDto;
-import org.example.emmm.repository.*;
+import org.example.emmm.repository.AgendaConfigRepository;
+import org.example.emmm.repository.AgendaRepository;
+import org.example.emmm.repository.CommentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -15,49 +20,57 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final AgendaRepository agendaRepository;
     private final AgendaConfigRepository agendaConfigRepository;
-    private final UserRepository userRepository;
-    private final UserRoomRepository userRoomRepository;
 
     @Transactional
-    public CommentDto.CreateCommentResDto createCommentTemplate(Long agendaId, Long reqId,CommentDto.CreateCommentReqDto req) {
+    public CommentDto.CreateCommentResDto createComment(Long agendaId, CommentDto.CreateCommentReqDto req) {
         Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
 
-        User u = userRepository.findByIdAndDeletedFalse(reqId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-
-        UserRoom ur = userRoomRepository.findActiveUserRoom(u, a.getRoom())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저룸입니다."));
-
-        if(!ur.getRole().equals("host")){
-            throw new IllegalArgumentException("호스트가 아닙니다.");
-        } else {
-
-
-        }
-
         Comment c = Comment.builder()
-                .title(req.getTitle())
                 .createdAt(LocalDateTime.now())
+                .content(req.getContent())
                 .agenda(a)
                 .build();
 
-        AgendaConfig ac = c.getAgenda().getConfig();
-        ac.setCommentEnabled(true);
-        agendaConfigRepository.save(ac);
-
         commentRepository.save(c);
 
-        return CommentDto.CreateCommentResDto.from(c, ac);
+        AgendaConfig ac = agendaConfigRepository.findByIdAndDeletedFalse(a.getConfig().getId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건설정입니다."));
+
+        if(ac.getCommentEnabled().equals(false)) {
+            ac.setCommentEnabled(true);
+        }
+
+        return CommentDto.CreateCommentResDto.from(c);
     }
 
-    public CommentDto.DetailCommentResDto getCommentTemplate(Long agendaId) {
+    @Transactional(readOnly = true)
+    public List<CommentDto.DetailCommentResDto> getComment(Long agendaId) {
         Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
 
-        Comment c = commentRepository.findActiveByAgenda(a)
+
+        List<Comment> cs = commentRepository.findAllActiveByCommentId(a.getId());
+
+        return cs.stream().map(CommentDto.DetailCommentResDto::from).toList();
+    }
+
+    @Transactional
+    public CommentDto.UpdateCommentResDto updateComment(Long commentId, CommentDto.UpdateCommentReqDto req) {
+        Comment c = commentRepository.findByIdAndDeletedFalse(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코멘트입니다."));
 
-        return CommentDto.DetailCommentResDto.from(c);
+        c.setContent(req.getContent());
+        commentRepository.save(c);
+
+        return CommentDto.UpdateCommentResDto.from(c);
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId) {
+        Comment c = commentRepository.findByIdAndDeletedFalse(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 코멘트입니다."));
+
+        c.setDeleted(true);
     }
 }

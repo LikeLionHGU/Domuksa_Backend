@@ -46,7 +46,7 @@ public class RoomController {
 
     //code를 통해서 roomId, isPassword 정보 가져오기
     @GetMapping("/code")
-    public ResponseEntity<RoomDto.CodeResDto> getRoomIdAndIsPassword (@RequestParam("code") String code) {
+    public ResponseEntity<RoomDto.CodeResDto> getRoomIdAndIsPassword(@RequestParam("code") String code) {
         return ResponseEntity.ok(roomService.getRoomIdAndIsPassword(code));
     }
 
@@ -84,6 +84,12 @@ public class RoomController {
                                 @PathVariable Long roomId) {
         Long reqId = principal.getUserId();
         return roomService.updateRoomState(roomId, reqId);
+    }
+
+    //해당 룸에 참여한 사람들 리스트 + 온라인상태인지 아닌지 체크
+    @GetMapping("/{roomId}/online")
+    public ResponseEntity<List<RoomDto.RoomMemberResDto>> getRoomMemberWithOnline(@PathVariable Long roomId) {
+        return ResponseEntity.ok(roomService.getRoomMembers(roomId));
     }
 
 }
