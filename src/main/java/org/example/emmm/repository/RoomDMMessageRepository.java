@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface RoomDMMessageRepository extends JpaRepository<RoomDMMessage, Long> {
     List<RoomDMMessage> findByRoomId (Long roomId);
     List<RoomDMMessage> findByRoomIdAndUserRoomId(Long roomId,Long userRoomId);
+
 }
