@@ -14,7 +14,6 @@ public class RoomDMMessageDto {
     @AllArgsConstructor
     @Builder
     public static class CreateDmReqDto{//post
-        private Long userRoomId;
         private String content;
 
     }
@@ -39,14 +38,14 @@ public class RoomDMMessageDto {
     @AllArgsConstructor
     @Builder
     public static class Message{
-        private Long id;
+        private Long dmId;
         private Long userRoomId;
         private String content;
         private LocalDateTime createdAt;
 
         public static Message from(RoomDMMessage roomDMMessage){
             return Message.builder()
-                    .id(roomDMMessage.getId())
+                    .dmId(roomDMMessage.getId())
                     .userRoomId(roomDMMessage.getUserRoom().getId())
                     .content(roomDMMessage.getContent())
                     .createdAt(roomDMMessage.getCreatedAt())

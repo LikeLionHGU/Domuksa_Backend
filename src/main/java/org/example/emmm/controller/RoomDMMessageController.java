@@ -2,27 +2,32 @@ package org.example.emmm.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.dto.RoomDMMessageDto;
+import org.example.emmm.security.UserPrincipal;
 import org.example.emmm.service.RoomDMMessageService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/room")
+@RequestMapping("/dm")
 public class RoomDMMessageController {
 
     private final RoomDMMessageService roomDMMessageService;
 
-    @PostMapping("/dm")
-    public ResponseEntity<RoomDMMessageDto.CreateDmResDto> createDm(@RequestBody RoomDMMessageDto.CreateDmReqDto req){
-        RoomDMMessageDto.CreateDmResDto response = roomDMMessageService.createDm(req);
-        return ResponseEntity.ok(response);
+    @PostMapping("/{roomId}")
+    public ResponseEntity<RoomDMMessageDto.CreateDmResDto> createDm(@RequestBody RoomDMMessageDto.CreateDmReqDto req,
+                                                                    @PathVariable Long roomId,
+                                                                    @AuthenticationPrincipal UserPrincipal principal){
+        Long userId = principal.getUserId();
+        return ResponseEntity.ok(roomDMMessageService.createDm(req, roomId, userId));
     }
 
-    @GetMapping("/dm")
-    public ResponseEntity<RoomDMMessageDto.DetailDmResDto> getDmList(@PathVariable Long roomId, @RequestParam Long userRoomId){
-        RoomDMMessageDto.DetailDmResDto res = roomDMMessageService.getDmList(roomId,userRoomId);
-        return ResponseEntity.ok(res);
+    @GetMapping("/{roomId}")
+    public ResponseEntity<RoomDMMessageDto.DetailDmResDto> getDmList(@PathVariable Long roomId,
+                                                                     @AuthenticationPrincipal UserPrincipal principal){
+        Long userId = principal.getUserId();
+        return ResponseEntity.ok(roomDMMessageService.getDmList(roomId, userId));
     }
 }
