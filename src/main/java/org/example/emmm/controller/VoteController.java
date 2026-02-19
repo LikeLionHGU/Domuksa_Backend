@@ -43,7 +43,7 @@ public class VoteController {
     public ResponseEntity<VoteDto.CreateVoteResDto> createVoteTemplate(@PathVariable Long agendaId,
                                                                @RequestBody VoteDto.CreateVoteReqDto req){
         String wsRes = createWsRes("update webSocket");
-        template.convertAndSend("/topic/vote" + agendaId, wsRes);
+        template.convertAndSend("/topic/vote/" + agendaId, wsRes);
         return ResponseEntity.ok(voteService.createVoteTemplate(agendaId, req));
     }
 
@@ -59,7 +59,7 @@ public class VoteController {
                                                                @RequestBody VoteDto.UpdateVoteReqDto req){
         VoteDto.UpdateVoteResDto res = voteService.updateVote(voteId, req);
         String wsRes = createWsRes("update webSocket");
-        template.convertAndSend("/topic/vote" +res.getAgendaId(), wsRes);
+        template.convertAndSend("/topic/vote/" +res.getAgendaId(), wsRes);
         return ResponseEntity.ok(res);
     }
 
@@ -68,7 +68,7 @@ public class VoteController {
     public ResponseEntity<String> deleteVote(@PathVariable Long voteId){
         Vote vote = voteService.deleteVote(voteId);
         String wsRes = createWsRes("update webSocket");
-        template.convertAndSend("/topic/vote" + vote.getAgenda().getId(), wsRes);
+        template.convertAndSend("/topic/vote/" + vote.getAgenda().getId(), wsRes);
         return ResponseEntity.ok("투표가 성공적으로 삭제되었습니다.");
     }
 
@@ -132,11 +132,13 @@ public class VoteController {
         return ResponseEntity.ok(voteOptionService.getVoteResult(voteId));
     }
 
-    //voteStatus를 running과 confirm으로 바꾸기
+    //voteStatus를 running과 confirm으로 바꾸기+++
     @PatchMapping("/{voteId}/voteStatus")
     public ResponseEntity<VoteDto.UpdateStatusResDto> updateStatus(@PathVariable Long voteId,
                                                                    @RequestBody VoteDto.UpdateStatusReqDto req) {
-        return ResponseEntity.ok(voteService.updateVoteStatus(voteId, req));
+        String wsRes = createWsRes("update webSocket");
+        template.convertAndSend("/topic/vote/" +voteId, wsRes);
+        return ResponseEntity.ok(voteService.updateVoteStatus(voteId,req));
     }
 
     //voteStatus를 가져오기
