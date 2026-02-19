@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/room")
 public class RoomController {
     private final RoomService roomService;
-    private final SimpMessagingTemplate template; //webSocket
+    private final SimpMessagingTemplate template; //webSocket 관련 Servicer 같은 것
 
     public String createWsRes(String text){
         return text+LocalDateTime.now();
