@@ -66,7 +66,7 @@ public class VoteService {
     }
 
     @Transactional
-    public String deleteVote(Long voteId) {
+    public Vote deleteVote(Long voteId) {
         Vote v = voteRepository.findByIdAndDeletedFalse(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 투표입니다."));
 
@@ -84,7 +84,7 @@ public class VoteService {
             vs.setDeleted(true);
         }
 
-        return "삭제되었습니다";
+        return v;
     }
 
     @Transactional
