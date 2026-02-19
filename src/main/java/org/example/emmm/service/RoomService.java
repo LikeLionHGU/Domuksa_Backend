@@ -256,6 +256,7 @@ public class RoomService {
                         .userId(ur.getUser().getId())
                         .name(ur.getUser().getName())
                         .role(ur.getRole())
+                        .profileUrl(ur.getUser().getProfileUrl())
                         .isOnline(presenceService.isUserOnline(roomId, ur.getUser().getId()))
                         .build())
                 .toList();

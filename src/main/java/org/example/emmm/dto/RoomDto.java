@@ -79,6 +79,7 @@ public class RoomDto {
         private Long userId;
         private String name;
         private String role; // HOST, MEMBER
+        private String profileUrl;
         private boolean isOnline;
     }
 
