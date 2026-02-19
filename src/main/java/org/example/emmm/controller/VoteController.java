@@ -1,17 +1,23 @@
 package org.example.emmm.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.emmm.domain.Agenda;
+import org.example.emmm.domain.Vote;
 import org.example.emmm.dto.VoteDto;
 import org.example.emmm.dto.VoteOptionDto;
 import org.example.emmm.dto.VoteSelectionDto;
+import org.example.emmm.repository.AgendaRepository;
 import org.example.emmm.security.UserPrincipal;
+import org.example.emmm.service.AgendaService;
 import org.example.emmm.service.VoteOptionService;
 import org.example.emmm.service.VoteSelectionService;
 import org.example.emmm.service.VoteService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -22,11 +28,22 @@ public class VoteController {
     private final VoteService voteService;
     private final VoteOptionService voteOptionService;
     private final VoteSelectionService voteSelectionService;
+    private final SimpMessagingTemplate template; //webSocket
+    private final AgendaService agendaService;
+    private final AgendaRepository agendaRepository;
 
-    //해당 안건 투표 활성화 + 이름정하기
+    //투표 생성, 삭제, 수정 ->웹소켓
+
+    public String createWsRes(String text){
+        return text + LocalDateTime.now();
+    }
+
+    //해당 안건 투표 활성화 + 이름정하기 +
     @PostMapping("/{agendaId}")
     public ResponseEntity<VoteDto.CreateVoteResDto> createVoteTemplate(@PathVariable Long agendaId,
                                                                @RequestBody VoteDto.CreateVoteReqDto req){
+        String wsRes = createWsRes("update webSocket");
+        template.convertAndSend("/topic/vote" + agendaId, wsRes);
         return ResponseEntity.ok(voteService.createVoteTemplate(agendaId, req));
     }
 
@@ -36,17 +53,23 @@ public class VoteController {
         return ResponseEntity.ok(voteService.getVote(agendaId));
     }
 
-    //투표 제목 수정하기
+    //투표 제목 수정하기 +
     @PatchMapping("/{voteId}")
     public ResponseEntity<VoteDto.UpdateVoteResDto> updateVote(@PathVariable Long voteId,
                                                                @RequestBody VoteDto.UpdateVoteReqDto req){
-        return ResponseEntity.ok(voteService.updateVote(voteId, req));
+        VoteDto.UpdateVoteResDto res = voteService.updateVote(voteId, req);
+        String wsRes = createWsRes("update webSocket");
+        template.convertAndSend("/topic/vote" +res.getAgendaId(), wsRes);
+        return ResponseEntity.ok(res);
     }
 
-    //Vote 삭제하기
+    //Vote 삭제하기 +
     @DeleteMapping("/{voteId}")
     public ResponseEntity<String> deleteVote(@PathVariable Long voteId){
-        return ResponseEntity.ok(voteService.deleteVote(voteId));
+        Vote vote = voteService.deleteVote(voteId);
+        String wsRes = createWsRes("update webSocket");
+        template.convertAndSend("/topic/vote" + vote.getAgenda().getId(), wsRes);
+        return ResponseEntity.ok("투표가 성공적으로 삭제되었습니다.");
     }
 
 
