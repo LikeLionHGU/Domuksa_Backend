@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 
 public class CommentDto {
     @Getter
+    @AllArgsConstructor
     public static class CreateCommentReqDto{
         private String content;
     }
@@ -52,6 +53,7 @@ public class CommentDto {
     }
 
     @Getter
+    @AllArgsConstructor
     public static class UpdateCommentReqDto{
         private String content;
     }
