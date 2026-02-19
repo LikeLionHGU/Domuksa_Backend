@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -16,13 +17,17 @@ public class CommentController {
     private final CommentService commentService;
     private final SimpMessagingTemplate template;
 
+    public String createWsRes(String text){
+        return text+ LocalDateTime.now();
+    }
+
     //comment 추가
     @PostMapping("/{agendaId}")
     public ResponseEntity<CommentDto.CreateCommentResDto> createCommentOption(@PathVariable Long agendaId,
                                                                                     @RequestBody CommentDto.CreateCommentReqDto req) {
         CommentDto.CreateCommentResDto res =  commentService.createComment(agendaId, req);
 
-        String wsRes = "update webSocket";
+        String wsRes = createWsRes("update webSocket");
         template.convertAndSend("/topic/comment/list/" + agendaId, wsRes);
         return ResponseEntity.ok(res);
     }

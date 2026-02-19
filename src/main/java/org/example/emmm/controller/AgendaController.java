@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,13 +18,17 @@ public class AgendaController {
     private final RoomService roomService;
     private final SimpMessagingTemplate template;
 
+    public String createWsRes(String text){
+        return text+ LocalDateTime.now();
+    }
+
     @PostMapping("/{roomId}")
     public ResponseEntity<AgendaDto.CreateAgendaResDto> createAgenda(@PathVariable Long roomId,
                                                                      @RequestBody AgendaDto.CreateAgendaReqDto req) {
 
         AgendaDto.CreateAgendaResDto res = agendaService.createAgenda(roomId, req);
 
-        String wsRes = "update webSocket";
+        String wsRes = createWsRes("update webSocket");
 
         template.convertAndSend("/topic/agenda/list/" + roomId, wsRes);
         return ResponseEntity.ok(res);
@@ -33,7 +37,7 @@ public class AgendaController {
     @GetMapping("/{agendaId}")
     public ResponseEntity<AgendaDto.DetailAgendaResDto> getAgenda(@PathVariable Long agendaId) {
         AgendaDto.DetailAgendaResDto res = agendaService.getAgenda(agendaId);
-        String wsRes = "update webSocket";
+        String wsRes = createWsRes("update webSocket");
         template.convertAndSend("/topic/agenda/current/" + res.getAgenda().getRoomId(), wsRes);
         return ResponseEntity.ok(res);
     }
@@ -43,7 +47,7 @@ public class AgendaController {
                                                                      @RequestBody AgendaDto.UpdateAgendaReqDto req) {
         AgendaDto.UpdateAgendaResDto res = agendaService.updateAgenda(agendaId, req);
 
-        String wsRes = "update webSocket";
+        String wsRes = createWsRes("update webSocket");
 
         template.convertAndSend("/topic/agenda/list/" + res.getRoomId(), wsRes);
 
@@ -60,7 +64,7 @@ public class AgendaController {
 
         Long res = agendaService.deleteAgenda(agendaId);
 
-        String wsRes = "update webSocket";
+        String wsRes = createWsRes("update webSocket");
 
         template.convertAndSend("/topic/agenda/list/" + res, wsRes);
 
