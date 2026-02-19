@@ -24,7 +24,7 @@ public class AgendaController {
 
         AgendaDto.CreateAgendaResDto res = agendaService.createAgenda(roomId, req);
 
-        List<AgendaDto.DetailListAgendaResDto> wsRes = roomService.getAgendas(roomId);
+        String wsRes = "update webSocket";
 
         template.convertAndSend("/topic/agenda/list/" + roomId, wsRes);
         return ResponseEntity.ok(res);
@@ -33,8 +33,8 @@ public class AgendaController {
     @GetMapping("/{agendaId}")
     public ResponseEntity<AgendaDto.DetailAgendaResDto> getAgenda(@PathVariable Long agendaId) {
         AgendaDto.DetailAgendaResDto res = agendaService.getAgenda(agendaId);
-
-        template.convertAndSend("/topic/agenda/current/" + res.getAgenda().getRoomId(), res);
+        String wsRes = "update webSocket";
+        template.convertAndSend("/topic/agenda/current/" + res.getAgenda().getRoomId(), wsRes);
         return ResponseEntity.ok(res);
     }
 
@@ -43,7 +43,7 @@ public class AgendaController {
                                                                      @RequestBody AgendaDto.UpdateAgendaReqDto req) {
         AgendaDto.UpdateAgendaResDto res = agendaService.updateAgenda(agendaId, req);
 
-        List<AgendaDto.DetailListAgendaResDto> wsRes = roomService.getAgendas(res.getRoomId());
+        String wsRes = "update webSocket";
 
         template.convertAndSend("/topic/agenda/list/" + res.getRoomId(), wsRes);
 
@@ -60,7 +60,7 @@ public class AgendaController {
 
         Long res = agendaService.deleteAgenda(agendaId);
 
-        List<AgendaDto.DetailListAgendaResDto> wsRes = roomService.getAgendas(res);
+        String wsRes = "update webSocket";
 
         template.convertAndSend("/topic/agenda/list/" + res, wsRes);
 

@@ -13,7 +13,6 @@ public class FileDto {
     @NoArgsConstructor
     @Builder
     public static class CreateFileResDto{//post
-        private Long roomId;
         private Long fileId;
         private Long agendaId;
         private String fileName;
@@ -23,7 +22,6 @@ public class FileDto {
 
         public static FileDto.CreateFileResDto from(File file){
             return builder()
-                    .roomId(file.getAgenda().getRoom().getId())
                     .fileId(file.getId())
                     .agendaId(file.getAgenda().getId())
                     .fileName(file.getFileName())

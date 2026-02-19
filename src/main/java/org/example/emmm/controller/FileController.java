@@ -1,7 +1,6 @@
 package org.example.emmm.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.emmm.domain.Agenda;
 import org.example.emmm.domain.File;
 import org.example.emmm.dto.FileDto;
 import org.example.emmm.service.FileService;
@@ -22,14 +21,13 @@ public class FileController {
     private final FileService fileService;
     private final SimpMessagingTemplate template;
 
-    //Todo: agendaId 받아오기 + service의 parameter로 받기
     @PostMapping(value = "/{agendaId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FileDto.CreateFileResDto> postFile(@PathVariable Long agendaId, @RequestPart("file") MultipartFile file) throws IOException {
         FileDto.CreateFileResDto res = fileService.uploadFile(file, "domuksa/", agendaId);
 
-        List<FileDto.FileListResDto> wsRes = fileService.getFile(agendaId);
+        String wsRes = "update webSocket";
 
-        template.convertAndSend("/topic/file/list/"+res.getRoomId(), wsRes);
+        template.convertAndSend("/topic/file/list/"+res.getAgendaId(), wsRes);
 
         return ResponseEntity.ok(res);
     }
@@ -43,9 +41,9 @@ public class FileController {
     public ResponseEntity<String> deleteFile(@PathVariable Long fileId) {
         File f = fileService.deletedFile(fileId);
 
-        List<FileDto.FileListResDto> wsRes = fileService.getFile(f.getAgenda().getId());
+        String wsRes = "update webSocket";
 
-        template.convertAndSend("/topic/file/list/"+f.getAgenda().getRoom().getId(), wsRes);
+        template.convertAndSend("/topic/file/list/"+f.getAgenda().getId(), wsRes);
         return ResponseEntity.ok("파일이 성공적으로 삭제되었습니다.");
 }
 
