@@ -90,9 +90,9 @@ public class RoomController {
     public String updateRoomState(@AuthenticationPrincipal UserPrincipal principal,
                                 @PathVariable Long roomId) {
         Long reqId = principal.getUserId();
-        String wsRes = createWsRes("update webSocket");
-        template.convertAndSend("/topic/room/state/" + roomId, wsRes);
-        return roomService.updateRoomState(roomId, reqId);
+        String res = roomService.updateRoomState(roomId, reqId);
+        template.convertAndSend("/topic/room/state/" + roomId, res);
+        return res;
     }
 
     //해당 룸에 참여한 사람들 리스트 + 온라인상태인지 아닌지 체크
