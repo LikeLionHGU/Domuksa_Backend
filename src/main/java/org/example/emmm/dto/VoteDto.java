@@ -79,11 +79,13 @@ public class VoteDto {
     public static class UpdateStatusResDto{
         private Long voteId;
         private String status;
+        private Long agendaId;
 
         public static VoteDto.UpdateStatusResDto from(Vote v) {
             return builder()
                     .voteId(v.getId())
                     .status(v.getVoteStatus())
+                    .agendaId(v.getAgenda().getId())
                     .build();
         }
     }

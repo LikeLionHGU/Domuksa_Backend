@@ -131,11 +131,13 @@ public class VoteController {
         return ResponseEntity.ok(voteOptionService.getVoteResult(voteId));
     }
 
-    //voteStatus를 running과 confirm으로 바꾸기
+    //voteStatus를 running과 confirm으로 바꾸기+++
     @PatchMapping("/{voteId}/voteStatus")
     public ResponseEntity<VoteDto.UpdateStatusResDto> updateStatus(@PathVariable Long voteId,
                                                                    @RequestBody VoteDto.UpdateStatusReqDto req) {
-        return ResponseEntity.ok(voteService.updateVoteStatus(voteId, req));
+        String wsRes = createWsRes("update webSocket");
+        template.convertAndSend("/topic/vote/" +voteId, wsRes);
+        return ResponseEntity.ok(voteService.updateVoteStatus(voteId,req));
     }
 
     //voteStatus를 가져오기
