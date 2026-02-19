@@ -98,6 +98,7 @@ public class RoomController {
     //해당 룸에 참여한 사람들 리스트 + 온라인상태인지 아닌지 체크
     @GetMapping("/{roomId}/online")
     public ResponseEntity<List<RoomDto.RoomMemberResDto>> getRoomMemberWithOnline(@PathVariable Long roomId) {
+        // 웹소켓 발송 코드는 삭제하고 깔끔하게 조회만!
         return ResponseEntity.ok(roomService.getRoomMembers(roomId));
     }
 
