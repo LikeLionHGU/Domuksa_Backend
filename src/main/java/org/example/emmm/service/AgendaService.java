@@ -95,7 +95,7 @@ public class AgendaService {
     }
 
     @Transactional
-    public void deleteAgenda(Long agendaId) {
+    public Long deleteAgenda(Long agendaId) {
         Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
 
@@ -111,6 +111,8 @@ public class AgendaService {
         agendaRepository.decreaseSequenceAbove(roomId, deletedSequence);
 
         agendaRepository.saveAndFlush(a);
+
+        return roomId;
     }
 
 

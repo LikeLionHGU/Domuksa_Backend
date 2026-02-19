@@ -76,12 +76,14 @@ public class VoteOptionDto {
     public static class DetailVoteResultResDto{
         private Long voteOptionId;
         private String voteStatus;
+        private String content;
         private int selectCount;
 
         public static DetailVoteResultResDto from(VoteOption vo){
             return builder()
                     .voteOptionId(vo.getId())
                     .voteStatus(vo.getVote().getVoteStatus())
+                    .content(vo.getContent())
                     .selectCount(vo.getSelectCount())
                     .build();
         }

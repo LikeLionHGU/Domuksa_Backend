@@ -6,6 +6,7 @@ import org.example.emmm.dto.RoomDto;
 import org.example.emmm.security.UserPrincipal;
 import org.example.emmm.service.RoomService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import java.util.List;
 @RequestMapping("/room")
 public class RoomController {
     private final RoomService roomService;
+    private final SimpMessagingTemplate template; //webSocket
 
     //host가 방 만들기
     @PostMapping("/host")
@@ -83,7 +85,9 @@ public class RoomController {
     public String updateRoomState(@AuthenticationPrincipal UserPrincipal principal,
                                 @PathVariable Long roomId) {
         Long reqId = principal.getUserId();
-        return roomService.updateRoomState(roomId, reqId);
+        String res = roomService.updateRoomState(roomId, reqId);
+        template.convertAndSend("/topic/room/state/" + roomId, res);
+        return res;
     }
 
     //해당 룸에 참여한 사람들 리스트 + 온라인상태인지 아닌지 체크

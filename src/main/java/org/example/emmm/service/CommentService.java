@@ -49,8 +49,7 @@ public class CommentService {
         Agenda a = agendaRepository.findByIdAndDeletedFalse(agendaId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
 
-
-        List<Comment> cs = commentRepository.findAllActiveByCommentId(a.getId());
+        List<Comment> cs = commentRepository.findAllActiveByAgendaId(a.getId());
 
         return cs.stream().map(CommentDto.DetailCommentResDto::from).toList();
     }

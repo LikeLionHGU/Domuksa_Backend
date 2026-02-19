@@ -2,10 +2,12 @@ package org.example.emmm.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.emmm.domain.Agenda;
+import org.example.emmm.domain.File;
 import org.example.emmm.dto.FileDto;
 import org.example.emmm.service.FileService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,12 +20,18 @@ import java.util.List;
 public class FileController {
 
     private final FileService fileService;
+    private final SimpMessagingTemplate template;
 
     //Todo: agendaId 받아오기 + service의 parameter로 받기
     @PostMapping(value = "/{agendaId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FileDto.CreateFileResDto> postFile(@PathVariable Long agendaId, @RequestPart("file") MultipartFile file) throws IOException {
-        FileDto.CreateFileResDto response = fileService.uploadFile(file, "domuksa/", agendaId);
-        return ResponseEntity.ok(response);
+        FileDto.CreateFileResDto res = fileService.uploadFile(file, "domuksa/", agendaId);
+
+        List<FileDto.FileListResDto> wsRes = fileService.getFile(agendaId);
+
+        template.convertAndSend("/topic/file/list/"+res.getRoomId(), wsRes);
+
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/{agendaId}")
@@ -33,7 +41,11 @@ public class FileController {
     }
     @DeleteMapping("/{fileId}")
     public ResponseEntity<String> deleteFile(@PathVariable Long fileId) {
-        fileService.deletedFile(fileId);
+        File f = fileService.deletedFile(fileId);
+
+        List<FileDto.FileListResDto> wsRes = fileService.getFile(f.getAgenda().getId());
+
+        template.convertAndSend("/topic/file/list/"+f.getAgenda().getRoom().getId(), wsRes);
         return ResponseEntity.ok("파일이 성공적으로 삭제되었습니다.");
 }
 

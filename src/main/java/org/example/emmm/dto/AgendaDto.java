@@ -67,11 +67,13 @@ public class AgendaDto {
     @Builder
     public static class UpdateAgendaResDto {
         private Long agendaId;
+        private Long roomId;
         private String name;
 
         public static UpdateAgendaResDto from(Agenda agenda) {
             return AgendaDto.UpdateAgendaResDto.builder()
                     .agendaId(agenda.getId())
+                    .roomId(agenda.getRoom().getId())
                     .name(agenda.getName())
                     .build();
         }

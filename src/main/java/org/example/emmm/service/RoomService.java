@@ -27,7 +27,6 @@ public class RoomService {
     private final UserRepository userRepository;
     private final UserRoomRepository userRoomRepository;
     private final AgendaRepository agendaRepository;
-    private final SimpMessagingTemplate messagingTemplate;
 
     private final PresenceService presenceService;
 
@@ -244,11 +243,6 @@ public class RoomService {
         }
 
         roomRepository.save(r);
-
-        messagingTemplate.convertAndSend(
-                "/topic/rooms/" + roomId,
-                new RoomDto.RoomStateChangedMessage(r.getId(), r.getState())
-        );
 
         return r.getState();
     }
