@@ -33,7 +33,6 @@ public class VoteController {
     private final AgendaRepository agendaRepository;
 
     //투표 생성, 삭제, 수정 ->웹소켓
-
     public String createWsRes(String text){
         return text + LocalDateTime.now();
     }
@@ -43,7 +42,7 @@ public class VoteController {
     public ResponseEntity<VoteDto.CreateVoteResDto> createVoteTemplate(@PathVariable Long agendaId,
                                                                @RequestBody VoteDto.CreateVoteReqDto req){
         String wsRes = createWsRes("update webSocket");
-        template.convertAndSend("/topic/vote" + agendaId, wsRes);
+        template.convertAndSend("/topic/vote/" + agendaId, wsRes);
         return ResponseEntity.ok(voteService.createVoteTemplate(agendaId, req));
     }
 
@@ -59,7 +58,7 @@ public class VoteController {
                                                                @RequestBody VoteDto.UpdateVoteReqDto req){
         VoteDto.UpdateVoteResDto res = voteService.updateVote(voteId, req);
         String wsRes = createWsRes("update webSocket");
-        template.convertAndSend("/topic/vote" +res.getAgendaId(), wsRes);
+        template.convertAndSend("/topic/vote/" +res.getAgendaId(), wsRes);
         return ResponseEntity.ok(res);
     }
 
@@ -68,7 +67,7 @@ public class VoteController {
     public ResponseEntity<String> deleteVote(@PathVariable Long voteId){
         Vote vote = voteService.deleteVote(voteId);
         String wsRes = createWsRes("update webSocket");
-        template.convertAndSend("/topic/vote" + vote.getAgenda().getId(), wsRes);
+        template.convertAndSend("/topic/vote/" + vote.getAgenda().getId(), wsRes);
         return ResponseEntity.ok("투표가 성공적으로 삭제되었습니다.");
     }
 
