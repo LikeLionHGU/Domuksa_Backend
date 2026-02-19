@@ -49,4 +49,6 @@ public class Room{
 
     private String state;
 
+    private Long currentAgendaId;
+
 }

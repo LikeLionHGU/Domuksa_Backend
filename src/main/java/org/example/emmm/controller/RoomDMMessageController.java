@@ -9,6 +9,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -18,11 +20,15 @@ public class RoomDMMessageController {
     private final RoomDMMessageService roomDMMessageService;
     private final SimpMessagingTemplate template; //webSocket
 
+    public String createWsRes(String text){
+        return text+ LocalDateTime.now();
+    }
+
     @PostMapping("/{roomId}")
     public ResponseEntity<RoomDMMessageDto.CreateDmResDto> createDm(@RequestBody RoomDMMessageDto.CreateDmReqDto req,
                                                                     @PathVariable Long roomId,
                                                                     @AuthenticationPrincipal UserPrincipal principal){
-        String wsRes = "update webSocket";
+        String wsRes = createWsRes("update webSocket");
         template.convertAndSend("/topic/dm/" + roomId, wsRes);
         Long userId = principal.getUserId();
         return ResponseEntity.ok(roomDMMessageService.createDm(req, roomId, userId));
