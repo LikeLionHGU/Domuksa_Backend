@@ -58,6 +58,7 @@ public class RoomDto {
         private String state;
         private int currentAgendaSequence;
         private String role;
+        private Long currentAgendaId;
 
         public static RoomDto.DetailRoomResDto from(Room room, UserRoom userRoom) {
             return builder()
@@ -67,6 +68,7 @@ public class RoomDto {
                     .state(room.getState())
                     .currentAgendaSequence(room.getCurrentAgendaSequence())
                     .role(userRoom.getRole())
+                    .currentAgendaId(room.getCurrentAgendaId())
                     .build();
         }
     }

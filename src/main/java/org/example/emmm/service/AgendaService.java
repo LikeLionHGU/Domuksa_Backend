@@ -60,6 +60,7 @@ public class AgendaService {
 
         Room r = a.getRoom();
         r.setCurrentAgendaSequence(a.getSequence());
+        r.setCurrentAgendaId(agendaId);
         int currentAgendaSequence = r.getCurrentAgendaSequence();
 
         return AgendaDto.DetailAgendaResDto.from(a, ac,  currentAgendaSequence);
