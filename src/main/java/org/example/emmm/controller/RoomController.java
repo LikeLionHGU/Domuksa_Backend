@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -18,6 +19,10 @@ import java.util.List;
 public class RoomController {
     private final RoomService roomService;
     private final SimpMessagingTemplate template; //webSocket
+
+    public String createWsRes(String text){
+        return text+LocalDateTime.now();
+    }
 
     //host가 방 만들기
     @PostMapping("/host")
@@ -85,7 +90,7 @@ public class RoomController {
     public String updateRoomState(@AuthenticationPrincipal UserPrincipal principal,
                                 @PathVariable Long roomId) {
         Long reqId = principal.getUserId();
-        String wsRes = "update webSocket";
+        String wsRes = createWsRes("update webSocket");
         template.convertAndSend("/topic/room/state/" + roomId, wsRes);
         return roomService.updateRoomState(roomId, reqId);
     }
