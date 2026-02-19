@@ -13,6 +13,7 @@ public class FileDto {
     @NoArgsConstructor
     @Builder
     public static class CreateFileResDto{//post
+        private Long roomId;
         private Long fileId;
         private Long agendaId;
         private String fileName;
@@ -22,6 +23,7 @@ public class FileDto {
 
         public static FileDto.CreateFileResDto from(File file){
             return builder()
+                    .roomId(file.getAgenda().getRoom().getId())
                     .fileId(file.getId())
                     .agendaId(file.getAgenda().getId())
                     .fileName(file.getFileName())
@@ -37,14 +39,14 @@ public class FileDto {
     @NoArgsConstructor
     @Builder
     public static class FileListResDto{//get
-        private Long id;
+        private Long fileId;
         private String fileName;
         private String fileUrl;
         private Boolean isPdf;
 
         public static FileDto.FileListResDto from(File file){
             return builder()
-                    .id(file.getId())
+                    .fileId(file.getId())
                     .fileName(file.getFileName())
                     .fileUrl(file.getFileUrl())
                     .isPdf(file.getIsPdf())

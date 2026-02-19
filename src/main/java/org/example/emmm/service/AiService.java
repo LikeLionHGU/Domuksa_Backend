@@ -127,25 +127,38 @@ public class AiService {
                 agenda.getName(),
                 agenda.getSequence(),
                 voteItem,
-                limitCommentsForPrompt(commentItems), // ✅ 변경된 헬퍼 메서드 사용
+                limitCommentsForPrompt(commentItems),
                 limitFilesForPrompt(fileItems),
                 extractedTexts
         );
 
-        // 8) prompt 생성
-        String prompt = promptBuilder.buildSummaryPrompt(materials);
+// 8-1) 요약용 Prompt 생성
+        String summaryPrompt = promptBuilder.buildSummaryPrompt(materials);
 
-        // 9) LLM 호출
-        String summary = llmClient.summarizeText(prompt);
+        // 9-1) LLM 호출 (요약 생성)
+        String summary = llmClient.summarizeText(summaryPrompt);
 
-        // 10) AISummary upsert(update/insert)
+        // 8-2) 제목용 Prompt 생성 (생성된 요약을 바탕으로)
+        String titlePrompt = promptBuilder.buildTitlePrompt(summary);
+
+        // 9-2) LLM 호출 (제목 생성)
+        String title = llmClient.summarizeText(titlePrompt);
+
+        // (혹시 모를 따옴표나 공백 제거)
+        if (title != null) {
+            title = title.replaceAll("[\"']", "").trim();
+        }
+
+        // 10) AISummary upsert
         Ai ai = aiRepository.findActiveAiByAgendaId(agendaId).orElse(null);
         if (ai == null) {
             ai = Ai.builder()
                     .agenda(agenda)
+                    .title(title)
                     .summaryText(summary)
                     .build();
         } else {
+            ai.setTitle(title);
             ai.setSummaryText(summary);
         }
 
@@ -158,7 +171,6 @@ public class AiService {
         return s.length() <= max ? s : s.substring(0, max) + "...";
     }
 
-    // ✅ 수정됨: 단일 내용(content)에 대해서만 길이 제한 수행
     private static List<AiMaterialDto.CommentItem> limitCommentsForPrompt(List<AiMaterialDto.CommentItem> items) {
         if (items == null) return List.of();
         int limit = Math.min(items.size(), 30); // comment 단위 상한

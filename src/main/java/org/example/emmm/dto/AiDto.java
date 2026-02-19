@@ -14,12 +14,14 @@ public class AiDto {
     public static class CreateAiResDto {
         private Long id;
         private Long agendaId;
+        private String title;
         private String summaryText;
 
         public static CreateAiResDto from(Ai ai) {
             return builder()
                     .id(ai.getId())
                     .agendaId(ai.getAgenda().getId())
+                    .title(ai.getTitle())
                     .summaryText(ai.getSummaryText())
                     .build();
         }
@@ -32,12 +34,14 @@ public class AiDto {
     public static class DetailAiResDto {
         private Long id;
         private Long agendaId;
+        private String title;
         private String summaryText;
 
         public static DetailAiResDto from(Ai ai) {
             return builder()
                     .id(ai.getId())
                     .agendaId(ai.getAgenda().getId())
+                    .title(ai.getTitle())
                     .summaryText(ai.getSummaryText())
                     .build();
         }

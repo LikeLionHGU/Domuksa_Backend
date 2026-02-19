@@ -37,6 +37,8 @@ public class Ai{
         this.deleted = false;
     }
 
+    private String title;
+
     @Column(columnDefinition = "TEXT")
     private String summaryText;
 
