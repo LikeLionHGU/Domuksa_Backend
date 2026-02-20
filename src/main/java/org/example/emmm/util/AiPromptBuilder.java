@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AiPromptBuilder {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public String buildSummaryPrompt(AiMaterialDto.AgendaMaterials materials) {
         String json;
@@ -20,50 +20,37 @@ public class AiPromptBuilder {
         }
 
         return """
-            당신은 기업의 수석 회의 서기이자 데이터 분석가입니다.
-            제공된 JSON 데이터(투표 결과, 댓글 토론, 업로드된 파일 내용)를 바탕으로 전문적인 '안건 결과 보고서'를 작성하세요.
-            
-            반드시 아래 [출력 형식]을 엄격하게 따르세요. 한국어로 작성하십시오.
-            
-            ---
-            [출력 형식]
-            
-            # 1. 투표 결과 요약
-            (투표 데이터인 'vote' 필드가 없다면 "진행된 투표가 없습니다."라고 출력)
-            - 투표 결과를 단순히 숫자로 나열하지 말고, **팀원들의 의견이 어떤 방향으로 수렴되었는지** 분석하여 서술형으로 요약.
-            - 가장 많은 선택을 받은 항목과 그 의미를 강조.
-            
-            # 2. 업로드된 자료 검토 결과
-            (파일 데이터인 'fileExtractedTexts' 필드가 비어있다면 "검토된 자료가 없습니다."라고 출력)
-            - 첨부된 파일들(PDF 등)에서 추출된 핵심 내용을 요약.
-            - 자료가 시사하는 바가 무엇인지 3개 내외의 불릿 포인트로 정리.
-            
-            # 3. Final Summary (종합 결론)
-            - 댓글('comments')과 위의 내용들을 종합하여 최종 결론을 도출.
-            - 논의된 쟁점, 합의된 사항, 그리고 앞으로의 해결 과제(Next Step)를 명확히 기술.
-            - 문장은 "~함", "~됨" 등의 개조식 서술형 어미 사용.
-            
-            ---
-            [제약 사항]
-            1. 제공된 JSON 데이터에 없는 내용은 절대 지어내지 말 것.
-            2. 마크다운(Markdown) 문법을 사용할 것 (제목은 #, 소제목은 ##, 리스트는 - 사용).
-            3. 감정적인 표현을 배제하고 객관적이고 건조한 톤 유지.
-            
-            [입력 데이터(JSON)]
-            """ + json;
-    }
-
-    public String buildTitlePrompt(String summaryText) {
-        return """
-            아래 제공된 '회의 요약본'을 읽고, 이 회의 내용을 가장 잘 대변하는 **핵심 제목**을 하나 지어주세요.
-            
-            [제약 사항]
-            1. 제목은 20자 이내로 간결하게 작성할 것.
-            2. "회의 결과 보고서" 같은 뻔한 제목보다는, 구체적인 안건이나 결정 사항이 드러나게 작성할 것.
-            3. 따옴표(" ")나 마크다운(#) 없이 오직 텍스트만 출력할 것.
-            4. 한국어로 작성할 것.
-            
-            [회의 요약본]
-            """ + summaryText;
+                당신은 기업의 수석 회의 서기입니다.
+                제공된 JSON 데이터만 근거로 아래 형식의 JSON을 **오직 JSON만** 출력하세요.
+                (설명/코드펜스/추가 텍스트 금지)
+                
+                [출력 JSON 스키마]
+                {
+                  "title": "20자 이내 핵심 제목",
+                  "summaryText": "마크다운 회의 결과 보고서 전체"
+                }
+                
+                [title 규칙]
+                1) 20자 이내
+                2) 따옴표/해시(#) 포함 금지
+                3) 구체적인 안건/결정이 드러나게
+                
+                [summaryText 규칙]
+                1) 마크다운 문법 엄격 준수
+                2) 섹션(#) 사이에 --- 구분선 삽입
+                3) 핵심은 **굵게**
+                4) 중요한 합의는 > 블록 인용
+                5) "~함/~됨" 개조식 톤
+                6) 입력 JSON에 없는 내용은 절대 지어내지 말 것
+                
+                [보고서 형식]
+                # 📊 1. 투표 결과 분석
+                ---
+                # 📂 2. 주요 참고 자료 검토
+                ---
+                # 💡 3. Final Summary (종합 결론)
+                
+                [입력 데이터(JSON)]
+                """ + json;
     }
 }

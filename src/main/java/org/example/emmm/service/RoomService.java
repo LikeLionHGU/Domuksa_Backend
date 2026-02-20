@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.emmm.domain.*;
 import org.example.emmm.dto.AgendaDto;
 import org.example.emmm.dto.RoomDto;
-import org.example.emmm.repository.AgendaRepository;
-import org.example.emmm.repository.RoomRepository;
-import org.example.emmm.repository.UserRepository;
-import org.example.emmm.repository.UserRoomRepository;
+import org.example.emmm.repository.*;
 import org.example.emmm.util.RoomCodeGenerator;
+import org.springframework.core.NestedExceptionUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -20,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static reactor.netty.http.HttpConnectionLiveness.log;
+
 @Service
 @RequiredArgsConstructor
 public class RoomService {
@@ -29,6 +29,17 @@ public class RoomService {
     private final AgendaRepository agendaRepository;
 
     private final PresenceService presenceService;
+    private final TimerRepository timerRepository;
+
+
+    private Timer createDefaultTimer(Room savedRoom) {
+        return Timer.builder()
+                .createdAt(LocalDateTime.now())
+                .time(0L)          // 초기 시간 0 (단위가 초인지 확인)
+                .status("stop")    // 초기 상태 stop
+                .room(savedRoom)   // FK
+                .build();
+    }
 
     @Transactional
     public RoomDto.CreateRoomResDto create(RoomDto.CreateRoomReqDto req, Long hostUserId) {
@@ -52,26 +63,45 @@ public class RoomService {
                     .build();
 
             try {
+                // 1) Room 저장
                 Room savedRoom = roomRepository.save(room);
 
+                // 2) Host 매핑 저장
                 UserRoom hostMapping = UserRoom.builder()
                         .room(savedRoom)
                         .user(host)
                         .role("host")
                         .state("active")
                         .build();
-
                 userRoomRepository.save(hostMapping);
+
+                // 3) ✅ Timer 기본값으로 생성 후 저장
+                Timer t = createDefaultTimer(savedRoom);
+                timerRepository.save(t);
 
                 return new RoomDto.CreateRoomResDto(savedRoom.getId(), savedRoom.getCode(), savedRoom.getRoomName());
 
             } catch (DataIntegrityViolationException e) {
-                System.out.println(e.getMessage());
+                // ✅ 핵심: 여기서 "진짜 원인"을 반드시 확인해야 함
+                Throwable root = NestedExceptionUtils.getMostSpecificCause(e);
+                String rootMsg = (root != null ? root.getMessage() : e.getMessage());
+                log.error("Room create failed. attempt={}, code={}, root={}", attempt + 1, code, rootMsg, e);
+
+                // ✅ "room.code 유니크 충돌"일 때만 재시도
+                // (아래 문자열은 DB/인덱스명에 맞게 조정 필요)
+                if (rootMsg != null && (rootMsg.contains("room") && rootMsg.contains("code") && rootMsg.contains("Duplicate"))) {
+                    continue;
+                }
+
+                // 그 외(타이머 제약/NOT NULL/길이 초과/FK 등)는 재시도해도 계속 실패하므로 바로 throw
+                throw e;
             }
         }
 
         throw new IllegalStateException("Failed to generate unique room code");
     }
+
+
 
     //password 있는 방 참여
     @Transactional
@@ -221,7 +251,7 @@ public class RoomService {
     }
 
     @Transactional
-    public String updateRoomState(Long roomId, Long userId) {
+    public String updateRoomState(Long roomId, RoomDto.UpdateStateReqDto req,Long userId) {
 
         Room r = roomRepository.findByIdAndDeletedFalse(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
@@ -236,10 +266,12 @@ public class RoomService {
             throw new IllegalStateException("방 상태 변경 권한이 없습니다.");
         }
 
-        if ("running".equals(r.getState())) {
-            r.setState("complete");
+        if ("running".equals(r.getState()) && req.getState().equals("complete")) {
+            r.setState(req.getState());
+        } else if ("complete".equals(r.getState()) && req.getState().equals("running")) {
+            r.setState(req.getState());
         } else {
-            r.setState("running");
+            throw new IllegalStateException("request가 running이거나 complete가 아닙니다.");
         }
 
         roomRepository.save(r);

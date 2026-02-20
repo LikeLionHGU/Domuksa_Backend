@@ -88,9 +88,10 @@ public class RoomController {
     //해당 방의 웹소켓 적용해서 진행중/완료됨 상태 변환하기
     @PatchMapping("/{roomId}/state")
     public String updateRoomState(@AuthenticationPrincipal UserPrincipal principal,
+                                @RequestBody RoomDto.UpdateStateReqDto req,
                                 @PathVariable Long roomId) {
         Long reqId = principal.getUserId();
-        String res = roomService.updateRoomState(roomId, reqId);
+        String res = roomService.updateRoomState(roomId, req, reqId);
         template.convertAndSend("/topic/room/state/" + roomId, res);
         return res;
     }
