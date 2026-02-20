@@ -58,7 +58,7 @@ public class VoteController {
                                                                @RequestBody VoteDto.UpdateVoteReqDto req){
         VoteDto.UpdateVoteResDto res = voteService.updateVote(voteId, req);
         String wsRes = createWsRes("update webSocket");
-        template.convertAndSend("/topic/vote/title" +res.getAgendaId(), wsRes);
+        template.convertAndSend("/topic/vote/" + res.getAgendaId(), wsRes);
         return ResponseEntity.ok(res);
     }
 

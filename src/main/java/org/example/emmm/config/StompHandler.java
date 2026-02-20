@@ -7,7 +7,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.MessageHeaderAccessor; // ⭐ 추가
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
@@ -35,7 +35,6 @@ public class StompHandler implements ChannelInterceptor {
                     System.out.println("=== [StompHandler] 인증 성공: " + userId);
                 } catch (Exception e) {
                     System.out.println("=== [StompHandler] 인증 실패: " + e.getMessage());
-                    // 🚨 인증 실패 시 연결 거부 로직을 추가할 수 있습니다.
                     throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
                 }
             }

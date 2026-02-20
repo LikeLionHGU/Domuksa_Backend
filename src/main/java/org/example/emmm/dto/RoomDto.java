@@ -90,6 +90,12 @@ public class RoomDto {
 
     @Getter
     @AllArgsConstructor
+    public static class UpdateStateReqDto {
+        private String state;
+    }
+
+    @Getter
+    @AllArgsConstructor
     @NoArgsConstructor
     @Builder
     public static class CodeResDto {

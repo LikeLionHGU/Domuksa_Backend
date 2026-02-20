@@ -12,180 +12,104 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.time.Duration;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class TimerService {
-
     private final TimerRepository timerRepository;
     private final RoomRepository roomRepository;
-    private final UserRoomRepository userRoomRepository;
     private final UserRepository userRepository;
+    private final UserRoomRepository userRoomRepository;
 
+    @Transactional(readOnly = true)
+    public TimerDto.DetailTimerResDto getTimer(Long roomId) {
+        Room r = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
 
-    public TimerDto.TimerResDto get(Long roomId, Long userId) {
+        Timer t = timerRepository.findByRoomAndDeletedFalse(r)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Timer not found"));
 
-        long now = System.currentTimeMillis();
+        Long resTime = 0L;
+        if ("play".equals(t.getStatus())) {
+            LocalDateTime finishTime = t.getStartTime().plusSeconds(t.getTime());
+            Duration duration = Duration.between(LocalDateTime.now(), finishTime);
 
-        Timer timer = timerRepository.findByRoomIdAndDeletedFalse(roomId)
-                .orElseGet(() -> createAndSaveDefaultTimer(roomId));
-
-        // RUNNING 상태에서 시간이 끝났으면 상태 정리(REST만 쓸 때 특히 중요)
-        if (timer.getStatus() == TimerStatus.RUNNING && timer.getEndAtEpochMs() != null) {
-            long remaining = Timer.calcRemainingSeconds(timer.getEndAtEpochMs(), now);
-            if (remaining == 0L) {
-                timer.setRemainingSeconds(0L);
-                timer.setEndAtEpochMs(null);
-                timer.setStatus(TimerStatus.STOPPED);
-                timerRepository.save(timer);
-            }
+            resTime = (long) Math.ceil(duration.toMillis() / 1000.0);
+            if (resTime < 0) resTime = 0L;
+        } else if ("stop".equals(t.getStatus())) {
+            resTime = t.getTime();
         }
 
-        return TimerDto.TimerResDto.from(timer, now);
+        return TimerDto.DetailTimerResDto.builder()
+                .timerId(t.getId())
+                .roomId(t.getRoom().getId())
+                .time(resTime)
+                .state(t.getStatus())
+                .build();
     }
 
-    // POST /timer/{roomId}/set (host only)
-    public TimerDto.TimerResDto set(Long roomId, Long requesterUserId, TimerDto.TimerReqDto req) {
-
-        requireHost(roomId, requesterUserId);
-
-        if (req.getTotalSeconds() < 1) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TOTAL_SECONDS_MIN_1");
-        }
-
-        Room room = getRoomOrThrow(roomId);
-
-        Timer timer = timerRepository.findByRoomIdAndDeletedFalse(roomId)
-                .orElseGet(() -> createTimer(room));
-
-        if (timer.getStatus() == TimerStatus.RUNNING) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "TIMER_RUNNING_CANNOT_SET");
-        }
-
-        timer.setTotalSeconds(req.getTotalSeconds());
-        timerRepository.save(timer);
-
-        long now = System.currentTimeMillis();
-        return TimerDto.TimerResDto.from(timer, now);
-    }
-
-    //POST /timer/{roomId}/start (host only) (STOPPED/PAUSED -> RUNNING)
-    public TimerDto.TimerResDto start(Long roomId, Long requesterUserId) {
-        requireHost(roomId, requesterUserId);
-
-        Timer timer = timerRepository.findByRoomIdAndDeletedFalse(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "TIMER_NOT_SET"));
-
-        if (timer.getTotalSeconds() == null || timer.getTotalSeconds() <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TIMER_NOT_SET");
-        }
-
-        if (timer.getStatus() == TimerStatus.RUNNING) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "TIMER_ALREADY_RUNNING");
-        }
-
-        if (timer.getRemainingSeconds() == null || timer.getRemainingSeconds() <= 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "NO_REMAINING_TIME");
-        }
-
-        long now = System.currentTimeMillis();
-        timer.start(now);
-        timerRepository.save(timer);
-
-        return TimerDto.TimerResDto.from(timer, now);
-    }
-
-    //POST /timer/{roomId}/pause (host only)
-    //- RUNNING -> PAUSED
-    public TimerDto.TimerResDto pause(Long roomId, Long requesterUserId) {
-        requireHost(roomId, requesterUserId);
-
-        Timer timer = timerRepository.findByRoomIdAndDeletedFalse(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TIMER_NOT_FOUND"));
-
-        if (timer.getStatus() != TimerStatus.RUNNING) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "TIMER_NOT_RUNNING");
-        }
-
-        long now = System.currentTimeMillis();
-        timer.pause(now);
-        timerRepository.save(timer);
-
-        return TimerDto.TimerResDto.from(timer, now);
-    }
-
-    //POST /timer/{roomId}/reset (host only)
-    //어떤 상태든 STOPPED로 돌림
-    public TimerDto.TimerResDto reset(Long roomId, Long requesterUserId) {
-        requireHost(roomId, requesterUserId);
-
-        Timer timer = timerRepository.findByRoomIdAndDeletedFalse(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TIMER_NOT_FOUND"));
-
-        timer.reset();
-        timerRepository.save(timer);
-
-        long now = System.currentTimeMillis();
-        return TimerDto.TimerResDto.from(timer, now);
-    }
-
-    private void requireHost(Long roomId, Long userId) {
-        User u = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND"));
-
+    @Transactional
+    public TimerDto.UpdateTimeResDto updateTime(Long roomId, TimerDto.UpdateTimeReqDto req, Long userId) {
         Room r = roomRepository.findByIdAndDeletedFalse(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ROOM_NOT_FOUND"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
 
-        if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED");
+        Timer t = timerRepository.findByIdAndDeletedFalse(r.getTimer().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Timer not found"));
+
+        userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        UserRoom ur = userRoomRepository.findActiveUserRoom(userId, roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "UserRoom not found"));
+
+        if (!"host".equals(ur.getRole())) {
+            throw new IllegalArgumentException("호스트가 아닙니다.");
         }
 
-        UserRoom ur = userRoomRepository.findActiveUserRoom(u.getId(), r.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "NOT_MEMBER"));
+        if ("play".equals(t.getStatus())) {
+            t.setStartTime(LocalDateTime.now());
+        }
 
-
-         if (!"host".equalsIgnoreCase(ur.getRole())) {
-             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "HOST_ONLY");
-         }
+        t.setTime(req.getTime());
+        return TimerDto.UpdateTimeResDto.from(t);
     }
 
-    // (선택) 멤버 체크까지 하고 싶으면
-    @SuppressWarnings("unused")
-    private void requireMember(Long roomId, Long userId) {
-        User u = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND"));
-
+    @Transactional
+    public TimerDto.UpdateStateResDto updateState(Long roomId, TimerDto.UpdateStateReqDto req, Long userId) {
         Room r = roomRepository.findByIdAndDeletedFalse(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ROOM_NOT_FOUND"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
 
-        userRoomRepository.findActiveUserRoom(u.getId(), r.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "NOT_MEMBER"));
-    }
+        Timer t = timerRepository.findByIdAndDeletedFalse(r.getTimer().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Timer not found"));
 
-    // ---------------------------
-    // 생성/조회 유틸
-    // ---------------------------
+        userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-    private Room getRoomOrThrow(Long roomId) {
-        return roomRepository.findById(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ROOM_NOT_FOUND"));
-    }
+        UserRoom ur = userRoomRepository.findActiveUserRoom(userId, roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "UserRoom not found"));
 
-    private Timer createTimer(Room room) {
-        Timer timer = new Timer();
-        timer.setRoom(room);
-        timer.setDeleted(false);
-        timer.setStatus(TimerStatus.STOPPED);
-        timer.setTotalSeconds(0L);
-        timer.setRemainingSeconds(0L);
-        timer.setEndAtEpochMs(null);
-        return timer;
-    }
+        if (!"host".equals(ur.getRole())) {
+            throw new IllegalArgumentException("호스트가 아닙니다.");
+        }
 
-    private Timer createAndSaveDefaultTimer(Long roomId) {
-        Room room = getRoomOrThrow(roomId);
-        Timer timer = createTimer(room);
-        return timerRepository.save(timer);
+        if ("stop".equals(t.getStatus()) && "play".equals(req.getState())) {
+            t.setStatus(req.getState());
+            t.setStartTime(LocalDateTime.now());
+        } else if ("play".equals(t.getStatus()) && "stop".equals(req.getState())) {
+            t.setStatus(req.getState());
+            LocalDateTime finishTime = t.getStartTime().plusSeconds(t.getTime());
+            Duration duration = Duration.between(LocalDateTime.now(), finishTime);
+
+            long resTime = (long) Math.ceil(duration.toMillis() / 1000.0);
+            t.setTime(Math.max(0, resTime));
+            t.setStartTime(null);
+        } else {
+            throw new IllegalArgumentException("이미 해당 상태이거나 잘못된 요청입니다.");
+        }
+
+        return TimerDto.UpdateStateResDto.from(t);
     }
 }
-

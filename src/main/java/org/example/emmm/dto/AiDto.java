@@ -32,18 +32,27 @@ public class AiDto {
     @NoArgsConstructor
     @Builder
     public static class DetailAiResDto {
-        private Long id;
+        private Long aiId;
         private Long agendaId;
         private String title;
         private String summaryText;
 
         public static DetailAiResDto from(Ai ai) {
             return builder()
-                    .id(ai.getId())
+                    .aiId(ai.getId())
                     .agendaId(ai.getAgenda().getId())
                     .title(ai.getTitle())
                     .summaryText(ai.getSummaryText())
                     .build();
         }
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AiGenResponse {
+        private String title;
+        private String summaryText;
+    }
+
 }

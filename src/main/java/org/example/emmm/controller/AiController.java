@@ -27,4 +27,11 @@ public class AiController {
         Long reqId = principal.getUserId();
         return ResponseEntity.ok(aiService.getAiSummary(agendaId, reqId));
     }
+
+    @PatchMapping("/{agendaId}")
+    public ResponseEntity<AiDto.CreateAiResDto> updateAi(@PathVariable Long agendaId,
+                                                         @AuthenticationPrincipal UserPrincipal principal) {
+        Long reqId = principal.getUserId();
+        return ResponseEntity.ok(aiService.updateAi(agendaId, reqId));
+    }
 }
