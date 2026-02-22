@@ -22,12 +22,14 @@ public class CommentDto {
     @Builder
     public static class CreateCommentResDto{
         private Long commentId;
+        private Long roomId;
         private String content;
         private LocalDateTime createdAt;
 
         public static CreateCommentResDto from(Comment c){
             return builder()
                     .commentId(c.getId())
+                    .roomId(c.getAgenda().getRoom().getId())
                     .content(c.getContent())
                     .createdAt(c.getCreatedAt())
                     .build();

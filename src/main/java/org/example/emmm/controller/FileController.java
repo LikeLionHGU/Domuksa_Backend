@@ -39,6 +39,8 @@ public class FileController {
     @GetMapping("/{agendaId}")
     public ResponseEntity<List<FileDto.FileListResDto>> getFile(@PathVariable Long agendaId){
         List<FileDto.FileListResDto> files = fileService.getFile(agendaId);
+        String wsRes = createWsRes("update webSocket");
+        template.convertAndSend("/topic/file/list/"+agendaId, wsRes);
         return ResponseEntity.ok(files);
     }
 

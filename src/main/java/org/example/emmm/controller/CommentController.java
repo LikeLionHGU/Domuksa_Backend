@@ -28,6 +28,7 @@ public class CommentController {
         CommentDto.CreateCommentResDto res =  commentService.createComment(agendaId, req);
 
         String wsRes = createWsRes("update webSocket");
+        template.convertAndSend("/topic/agenda/current/" + res.getRoomId(), wsRes);
         template.convertAndSend("/topic/comment/list/" + agendaId, wsRes);
         return ResponseEntity.ok(res);
     }
