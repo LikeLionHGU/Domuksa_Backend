@@ -29,8 +29,6 @@ public class VoteController {
     private final VoteOptionService voteOptionService;
     private final VoteSelectionService voteSelectionService;
     private final SimpMessagingTemplate template; //webSocket
-    private final AgendaService agendaService;
-    private final AgendaRepository agendaRepository;
 
     //투표 생성, 삭제, 수정 ->웹소켓
     public String createWsRes(String text){

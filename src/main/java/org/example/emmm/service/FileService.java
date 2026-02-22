@@ -38,34 +38,49 @@ public class FileService {
     //Todo: parameter controller에서 바뀐대로 수정 + agendaId로 agenda 해당 agenda 불러오기 + agenda(null) 이거 null에 agenda로 바꾸기
     @Transactional
     public FileDto.CreateFileResDto uploadFile(MultipartFile file, String dirName, Long agendaId) throws IOException {
-
-        if (file == null||file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 없습니다");
         }
+
         String originalFileName = file.getOriginalFilename();
-        if (originalFileName == null) {
-            throw new IllegalArgumentException("파일 이름이 없습니다");
-        }
-        String fileExtension = "";//.png같은거
+        String fileExtension = "";
         boolean isPdf = false;
-        if(originalFileName.contains(".")){
+
+        if (originalFileName != null && originalFileName.contains(".")) {
             fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
             isPdf = fileExtension.equalsIgnoreCase(".pdf");
         }
 
-        String uuidFileName = dirName + UUID.randomUUID() + fileExtension;//이름 랜덤,dirName은 S3 버킷 안의 “폴더 경로”
+        // 1. S3 저장용 유니크한 이름 생성
+        String uuidFileName = dirName + UUID.randomUUID() + fileExtension;
 
-        ObjectMetadata metadata = new ObjectMetadata();//S3에 저장될 부가 정보(헤더)
-        metadata.setContentLength(file.getSize());//파일 크기
-        metadata.setContentType(file.getContentType());//image/png application/pdf 등 type 정해줌
+        // 2. 메타데이터 설정 (중요: PDF 및 이미지 타입 명시)
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
 
-        amazonS3Client.putObject(
-                new PutObjectRequest(bucket, uuidFileName, file.getInputStream(), metadata)
-                        .withCannedAcl(CannedAccessControlList.PublicRead)
-        );
+        // PDF일 경우 브라우저 뷰어 호환성을 위해 타입을 강제 지정
+        if (isPdf) {
+            metadata.setContentType("application/pdf");
+        } else {
+            metadata.setContentType(file.getContentType());
+        }
 
-        String s3Url = amazonS3Client.getUrl(bucket, uuidFileName).toString();//s3가 준 Url저장
-        Agenda agenda = agendaRepository.findByIdAndDeletedFalse(agendaId).orElseThrow();
+        // 3. S3 업로드 실행
+        try {
+            amazonS3Client.putObject(
+                    new PutObjectRequest(bucket, uuidFileName, file.getInputStream(), metadata)
+                            .withCannedAcl(CannedAccessControlList.PublicRead)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
+        String s3Url = amazonS3Client.getUrl(bucket, uuidFileName).toString();
+
+        // 4. DB 저장 및 연관 데이터 업데이트
+        Agenda agenda = agendaRepository.findByIdAndDeletedFalse(agendaId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 안건입니다."));
+
         File f = File.builder()
                 .agenda(agenda)
                 .fileName(originalFileName)
@@ -74,16 +89,16 @@ public class FileService {
                 .isPdf(isPdf)
                 .build();
 
-        AgendaConfig ac = agendaConfigRepository.findByIdAndDeletedFalse(agenda.getId()).orElseThrow();
-
-        //fileEnabled이 false면 true로 바꿔줌
-        if(ac.getFileEnabled().equals(false)) {
+        // Config의 fileEnabled 업데이트 (Fetch Join 등을 고려하면 성능이 더 좋아집니다)
+        AgendaConfig ac = agenda.getConfig();
+        if (ac != null && Boolean.FALSE.equals(ac.getFileEnabled())) {
             ac.setFileEnabled(true);
         }
 
         File saved = fileRepository.save(f);
-        return FileDto.CreateFileResDto.from(saved);//s3에 파일 저장
+        return FileDto.CreateFileResDto.from(saved);
     }
+
     public List<FileDto.FileListResDto> getFile(Long agendaId){
         return fileRepository.findByAgendaId(agendaId)
                 .stream()
