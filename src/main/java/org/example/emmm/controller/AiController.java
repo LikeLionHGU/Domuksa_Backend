@@ -27,7 +27,7 @@ public class AiController {
                                                          @AuthenticationPrincipal UserPrincipal principal) {
         Long reqId = principal.getUserId();
         String wsRes = createWsRes("update");
-        template.convertAndSend("/topic/ai" + agendaId, wsRes);
+        template.convertAndSend("/topic/ai/" + agendaId, wsRes);
         return ResponseEntity.ok(aiService.createAi(agendaId, reqId));
     }
 
@@ -43,7 +43,7 @@ public class AiController {
                                                          @AuthenticationPrincipal UserPrincipal principal) {
         Long reqId = principal.getUserId();
         String wsRes = createWsRes("update");
-        template.convertAndSend("/topic/ai" + agendaId, wsRes);
+        template.convertAndSend("/topic/ai/" + agendaId, wsRes);
         return ResponseEntity.ok(aiService.updateAi(agendaId, reqId));
     }
 }
