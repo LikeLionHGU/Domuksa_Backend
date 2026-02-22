@@ -55,4 +55,6 @@ public class AiDto {
         private String summaryText;
     }
 
+
+
 }

@@ -67,6 +67,8 @@ public class AgendaController {
         String wsRes = createWsRes("update webSocket");
 
         template.convertAndSend("/topic/agenda/list/" + res, wsRes);
+        template.convertAndSend("/topic/agenda/delete/" + res, agendaId);
+
 
         return ResponseEntity.ok().build();
     }
